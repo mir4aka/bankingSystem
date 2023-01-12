@@ -99,7 +99,7 @@ public class BankAccount {
         targetAccount.depositMoneyToAccount(amountToDeposit);
 
         ArrayDeque<String> amountTransferred = transactions.getAmountTransferred();
-        amountTransferred.push(String.format("Amount transferred -> %.2f lv.", finalAmount) );
+        amountTransferred.push(String.format("Amount transferred -> %.2f lv.", amountToDeposit) );
 
         updateTransactions(targetAccount, exchangeRate);
     }
@@ -173,8 +173,8 @@ public class BankAccount {
 
     @Override
     public String toString() {
-        return "Account name = " + owner.getFirstName() + " " + owner.getLastName() +
-                "\nAccount type = " + accountType +
-                "\nAvailableAmount = " + availableAmount + " lv.\n";
+        return String.format("Account name = " + "%s" + " " + "%s" +
+                "\nAccount type = " + "%s" +
+                "\nAvailableAmount = " + "%.2f" + " lv.\n", owner.getFirstName(), owner.getLastName(), this.accountType, this.availableAmount);
     }
 }
