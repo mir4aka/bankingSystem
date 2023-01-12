@@ -1,5 +1,7 @@
 package eu.deltasource;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayDeque;
 
 public class BankAccount {
@@ -18,6 +20,7 @@ public class BankAccount {
         this.currency = currency;
         this.availableAmount = availableAmount;
         this.accountType = accountType;
+
         this.transactions = new Transactions();
     }
 
@@ -42,7 +45,7 @@ public class BankAccount {
     public void depositMoneyToAccount(double amountToDeposit) {
         double moneyAvailable = getAvailableAmount();
 
-        if(getAccountType().equals("CurrentAccount") || getAccountType().equals("SavingsAccount")) {
+        if (getAccountType().equals("CurrentAccount") || getAccountType().equals("SavingsAccount")) {
             moneyAvailable += amountToDeposit;
         }
 
@@ -54,20 +57,22 @@ public class BankAccount {
         getTransactions().setAmountTransferred(amountTransferred);
     }
 
-    public void transferMoney(BankAccount targetAccount, double amount) {
-        if (!this.accountType.equals("CurrentAccount") || !targetAccount.getAccountType().equals("SavingsAccount")) {
-            throw new IllegalArgumentException("Transfers are only allowed between current accounts");
+    public void transferMoney(BankAccount targetAccount, double amountToDeposit) {
+        double fees = 0;
+
+        double exchangeRate;
+
+        if (!this.accountType.equals("CurrentAccount") || !targetAccount.getAccountType().equals("CurrentAccount")) {
+            throw new IllegalArgumentException("Transfers are only allowed between two Current accounts.\n");
         }
 
         if (this.getIban().equals(targetAccount.getIban())) {
-            throw new IllegalArgumentException("Cannot transfer money to the same account");
+            throw new IllegalArgumentException("It is not allowed to transfer money to the same bank account.\n");
         }
 
-        if (this.getAvailableAmount() < amount) {
-            throw new IllegalArgumentException("Insufficient funds in the source account");
+        if (this.getAvailableAmount() < amountToDeposit) {
+            throw new IllegalArgumentException("Not enough money in the source account.\n");
         }
-
-        double fees = 0;
 
         if (!this.getBankInstitution().getBankName().equals(targetAccount.bankInstitution.getBankName())) {
             fees += this.getBankInstitution().getPriceList().get("Tax to different bank");
@@ -75,73 +80,55 @@ public class BankAccount {
             fees += this.getBankInstitution().getPriceList().get("Tax to same bank");
         }
 
-        double exchangeRate = 1.0;
-
         if (!this.currency.equals(targetAccount.getCurrency())) {
-            exchangeRate = this.getBankInstitution().getPriceList().get(this.currency + "Exchange to different bank" + targetAccount.getCurrency());
+            exchangeRate = this.getBankInstitution().getPriceList().get("Exchange to different bank");
+        } else {
+            exchangeRate = this.getBankInstitution().getPriceList().get("Exchange to same bank");
         }
-        double finalAmount = amount * exchangeRate;
+        double finalAmount = amountToDeposit * exchangeRate;
 
         finalAmount += fees;
 
-        this.withdrawMoneyFromAccount(finalAmount);
-        targetAccount.depositMoneyToAccount(finalAmount);
+        double moneyInMyAccount = getAvailableAmount();
+        moneyInMyAccount -= finalAmount;
 
-        // create and save transaction
-        Transactions t = new Transactions();
-        ArrayDeque<String> amountTransferred = t.getAmountTransferred();
-        amountTransferred.push("Amount transferred -> " + finalAmount);
+        setAvailableAmount(moneyInMyAccount);
+
+//        this.withdrawMoneyFromAccount(finalAmount);
+
+        targetAccount.depositMoneyToAccount(amountToDeposit);
+
+        ArrayDeque<String> amountTransferred = transactions.getAmountTransferred();
+        amountTransferred.push(String.format("Amount transferred -> %.2f lv.", finalAmount) );
+
+        updateTransactions(targetAccount, exchangeRate);
     }
 
-    public Owner getOwner() {
-        return owner;
-    }
-
-    public void setOwner(Owner owner) {
-        this.owner = owner;
-    }
-
-    public BankInstitution getBankInstitution() {
+    private BankInstitution getBankInstitution() {
         return bankInstitution;
     }
 
-    public void setBankInstitution(BankInstitution bankInstitution) {
-        this.bankInstitution = bankInstitution;
-    }
-
-    public String getIban() {
+    private String getIban() {
         return iban;
     }
 
-    public void setIban(String iban) {
-        this.iban = iban;
-    }
-
-    public String getCurrency() {
+    private String getCurrency() {
         return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
     }
 
     public double getAvailableAmount() {
         return availableAmount;
     }
 
-    public void setAvailableAmount(double availableAmount) {
+    private void setAvailableAmount(double availableAmount) {
         this.availableAmount = availableAmount;
     }
 
-    public Transactions getTransactions() {
+    private Transactions getTransactions() {
         return transactions;
     }
 
-    public void setTransactions(Transactions transactions) {
-        this.transactions = transactions;
-    }
-
-    public String getAccountType() {
+    private String getAccountType() {
         return accountType;
     }
 
@@ -150,25 +137,44 @@ public class BankAccount {
 
         ArrayDeque<String> amountTransferred = getTransactions().getAmountTransferred();
 
-        if(amountTransferred.isEmpty()) {
+        if (amountTransferred.isEmpty()) {
             sb.append("There are no transactions for the account of ").append(owner.getFirstName()).append(" ").append(owner.getLastName()).append(System.lineSeparator());
             return sb.toString();
         }
 
         sb.append("Transactions of account ").append(owner.getFirstName()).append(" ").append(owner.getLastName()).append(": ").append(System.lineSeparator());
 
-        for (String s : amountTransferred) {
-            sb.append(s).append(System.lineSeparator());
+        for (String transaction : amountTransferred) {
+            sb.append(transaction).append(System.lineSeparator());
         }
 
         return sb.toString();
     }
 
+    private void updateTransactions(BankAccount targetAccount, double exchangeRate) {
+        transactions.setExchangeRate(exchangeRate);
+        transactions.setSourceBank(this.getBankInstitution());
+        transactions.setTargetBank(targetAccount.getBankInstitution());
+        transactions.setSourceCurrency(this.getCurrency());
+        transactions.setTargetCurrency(targetAccount.getCurrency());
+        transactions.setSourceIban(this.getIban());
+        transactions.setTargetIban(targetAccount.getIban());
+        transactions.setTimeStamp(Timestamp.valueOf(LocalDateTime.now()));
+
+        targetAccount.transactions.setExchangeRate(exchangeRate);
+        targetAccount.transactions.setSourceBank(this.getBankInstitution());
+        targetAccount.transactions.setTargetBank(targetAccount.getBankInstitution());
+        targetAccount.transactions.setSourceCurrency(this.getCurrency());
+        targetAccount.transactions.setTargetCurrency(targetAccount.getCurrency());
+        targetAccount.transactions.setSourceIban(this.getIban());
+        targetAccount.transactions.setTargetIban(targetAccount.getIban());
+        targetAccount.transactions.setTimeStamp(Timestamp.valueOf(LocalDateTime.now()));
+    }
 
     @Override
     public String toString() {
         return "Account name = " + owner.getFirstName() + " " + owner.getLastName() +
                 "\nAccount type = " + accountType +
-                "\nAvailableAmount = " + availableAmount + "\n";
+                "\nAvailableAmount = " + availableAmount + " lv.\n";
     }
 }

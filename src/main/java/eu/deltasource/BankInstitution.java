@@ -5,6 +5,7 @@ import java.util.*;
 public class BankInstitution {
     private String bankName;
     private String bankAddress;
+    private BankAccount account;
     private int numberOfCustomers;
     private Map<String, Double> priceList;
 
@@ -22,32 +23,19 @@ public class BankInstitution {
     public String getBankName() {
         return bankName;
     }
-
-    public void setBankName(String bankName) {
-        this.bankName = bankName;
-    }
-
-    public String getBankAddress() {
-        return bankAddress;
-    }
-
-    public void setBankAddress(String bankAddress) {
-        this.bankAddress = bankAddress;
-    }
-
-    public int getNumberOfCustomers() {
-        return numberOfCustomers;
-    }
-
-    public void setNumberOfCustomers(int numberOfCustomers) {
-        this.numberOfCustomers = numberOfCustomers;
+    public BankAccount getAccount() {
+        return account;
     }
 
     public Map<String, Double> getPriceList() {
         return priceList;
     }
 
-    public void setPriceList(Map<String, Double> priceList) {
-        this.priceList = priceList;
+    @Override
+    public String toString() {
+        return "The name of the bank is: " + this.bankName + System.lineSeparator() +
+                "The address of the bank is: " + this.bankAddress + System.lineSeparator() +
+                "Number of customers of the bank: " + this.numberOfCustomers + System.lineSeparator();
     }
+
 }
