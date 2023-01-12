@@ -23,96 +23,95 @@ public class BankAccount {
 
         this.transactions = new Transactions();
     }
+//    public void withdrawMoneyFromAccount(double amountToWithdraw) {
+//        double moneyAvailable = getAvailableAmount();
+//
+//        if (moneyAvailable < amountToWithdraw) {
+//            throw new IllegalArgumentException("Not enough money to withdraw");
+//        }
+//
+//        if (getAccountType().equals("CurrentAccount") || getAccountType().equals("SavingsAccount")) {
+//            moneyAvailable -= amountToWithdraw;
+//        }
+//
+//        setAvailableAmount(moneyAvailable);
+//        ArrayDeque<String> amountTransferred = getTransactions().getAmountTransferred();
+//        amountTransferred.push(String.format("Withdrawn money -> %.2f lv.", amountToWithdraw));
+//
+//        getTransactions().setAmountTransferred(amountTransferred);
+//    }
+//
+//    public void depositMoneyToAccount(double amountToDeposit) {
+//        double moneyAvailable = getAvailableAmount();
+//
+//        if (getAccountType().equals("CurrentAccount") || getAccountType().equals("SavingsAccount")) {
+//            moneyAvailable += amountToDeposit;
+//        }
+//
+//        setAvailableAmount(moneyAvailable);
+//
+//        ArrayDeque<String> amountTransferred = getTransactions().getAmountTransferred();
+//        amountTransferred.push(String.format("Deposited money -> %.2f lv.", amountToDeposit));
+//
+//        getTransactions().setAmountTransferred(amountTransferred);
+//    }
 
-    public void withdrawMoneyFromAccount(double amountToWithdraw) {
-        double moneyAvailable = getAvailableAmount();
+//    public void transferMoney(BankAccount targetAccount, double amountToDeposit) {
+//        double fees = 0;
+//
+//        double exchangeRate;
+//
+//        if (!this.accountType.equals("CurrentAccount") || !targetAccount.getAccountType().equals("CurrentAccount")) {
+//            throw new IllegalArgumentException("Transfers are only allowed between two Current accounts.\n");
+//        }
+//
+//        if (this.getIban().equals(targetAccount.getIban())) {
+//            throw new IllegalArgumentException("It is not allowed to transfer money to the same bank account.\n");
+//        }
+//
+//        if (this.getAvailableAmount() < amountToDeposit) {
+//            throw new IllegalArgumentException("Not enough money in the source account.\n");
+//        }
+//
+//        if (!this.getBankInstitution().getBankName().equals(targetAccount.bankInstitution.getBankName())) {
+//            fees += this.getBankInstitution().getPriceList().get("Tax to different bank");
+//        } else {
+//            fees += this.getBankInstitution().getPriceList().get("Tax to same bank");
+//        }
+//
+//        if (!this.currency.equals(targetAccount.getCurrency())) {
+//            exchangeRate = this.getBankInstitution().getPriceList().get("Exchange to different bank");
+//        } else {
+//            exchangeRate = this.getBankInstitution().getPriceList().get("Exchange to same bank");
+//        }
+//        double finalAmount = amountToDeposit * exchangeRate;
+//
+//        finalAmount += fees;
+//
+//        double moneyInMyAccount = getAvailableAmount();
+//        moneyInMyAccount -= finalAmount;
+//
+//        setAvailableAmount(moneyInMyAccount);
+//
+////        this.withdrawMoneyFromAccount(finalAmount);
+//
+//        targetAccount.depositMoneyToAccount(amountToDeposit);
+//
+//        ArrayDeque<String> amountTransferred = transactions.getAmountTransferred();
+//        amountTransferred.push(String.format("Amount transferred -> %.2f lv.", amountToDeposit) );
+//
+//        updateTransactions(targetAccount, exchangeRate);
+//    }
 
-        if (moneyAvailable < amountToWithdraw) {
-            throw new IllegalArgumentException("Not enough money to withdraw");
-        }
-
-        if (getAccountType().equals("CurrentAccount") || getAccountType().equals("SavingsAccount")) {
-            moneyAvailable -= amountToWithdraw;
-        }
-
-        setAvailableAmount(moneyAvailable);
-        ArrayDeque<String> amountTransferred = getTransactions().getAmountTransferred();
-        amountTransferred.push(String.format("Withdrawn money -> %.2f lv.", amountToWithdraw));
-
-        getTransactions().setAmountTransferred(amountTransferred);
-    }
-
-    public void depositMoneyToAccount(double amountToDeposit) {
-        double moneyAvailable = getAvailableAmount();
-
-        if (getAccountType().equals("CurrentAccount") || getAccountType().equals("SavingsAccount")) {
-            moneyAvailable += amountToDeposit;
-        }
-
-        setAvailableAmount(moneyAvailable);
-
-        ArrayDeque<String> amountTransferred = getTransactions().getAmountTransferred();
-        amountTransferred.push(String.format("Deposited money -> %.2f lv.", amountToDeposit));
-
-        getTransactions().setAmountTransferred(amountTransferred);
-    }
-
-    public void transferMoney(BankAccount targetAccount, double amountToDeposit) {
-        double fees = 0;
-
-        double exchangeRate;
-
-        if (!this.accountType.equals("CurrentAccount") || !targetAccount.getAccountType().equals("CurrentAccount")) {
-            throw new IllegalArgumentException("Transfers are only allowed between two Current accounts.\n");
-        }
-
-        if (this.getIban().equals(targetAccount.getIban())) {
-            throw new IllegalArgumentException("It is not allowed to transfer money to the same bank account.\n");
-        }
-
-        if (this.getAvailableAmount() < amountToDeposit) {
-            throw new IllegalArgumentException("Not enough money in the source account.\n");
-        }
-
-        if (!this.getBankInstitution().getBankName().equals(targetAccount.bankInstitution.getBankName())) {
-            fees += this.getBankInstitution().getPriceList().get("Tax to different bank");
-        } else {
-            fees += this.getBankInstitution().getPriceList().get("Tax to same bank");
-        }
-
-        if (!this.currency.equals(targetAccount.getCurrency())) {
-            exchangeRate = this.getBankInstitution().getPriceList().get("Exchange to different bank");
-        } else {
-            exchangeRate = this.getBankInstitution().getPriceList().get("Exchange to same bank");
-        }
-        double finalAmount = amountToDeposit * exchangeRate;
-
-        finalAmount += fees;
-
-        double moneyInMyAccount = getAvailableAmount();
-        moneyInMyAccount -= finalAmount;
-
-        setAvailableAmount(moneyInMyAccount);
-
-//        this.withdrawMoneyFromAccount(finalAmount);
-
-        targetAccount.depositMoneyToAccount(amountToDeposit);
-
-        ArrayDeque<String> amountTransferred = transactions.getAmountTransferred();
-        amountTransferred.push(String.format("Amount transferred -> %.2f lv.", amountToDeposit) );
-
-        updateTransactions(targetAccount, exchangeRate);
-    }
-
-    private BankInstitution getBankInstitution() {
+    public BankInstitution getBankInstitution() {
         return bankInstitution;
     }
 
-    private String getIban() {
+    public String getIban() {
         return iban;
     }
 
-    private String getCurrency() {
+    public String getCurrency() {
         return currency;
     }
 
@@ -120,15 +119,15 @@ public class BankAccount {
         return availableAmount;
     }
 
-    private void setAvailableAmount(double availableAmount) {
+    public void setAvailableAmount(double availableAmount) {
         this.availableAmount = availableAmount;
     }
 
-    private Transactions getTransactions() {
+    public Transactions getTransactions() {
         return transactions;
     }
 
-    private String getAccountType() {
+    public String getAccountType() {
         return accountType;
     }
 
@@ -151,25 +150,25 @@ public class BankAccount {
         return sb.toString();
     }
 
-    private void updateTransactions(BankAccount targetAccount, double exchangeRate) {
-        transactions.setExchangeRate(exchangeRate);
-        transactions.setSourceBank(this.getBankInstitution());
-        transactions.setTargetBank(targetAccount.getBankInstitution());
-        transactions.setSourceCurrency(this.getCurrency());
-        transactions.setTargetCurrency(targetAccount.getCurrency());
-        transactions.setSourceIban(this.getIban());
-        transactions.setTargetIban(targetAccount.getIban());
-        transactions.setTimeStamp(Timestamp.valueOf(LocalDateTime.now()));
-
-        targetAccount.transactions.setExchangeRate(exchangeRate);
-        targetAccount.transactions.setSourceBank(this.getBankInstitution());
-        targetAccount.transactions.setTargetBank(targetAccount.getBankInstitution());
-        targetAccount.transactions.setSourceCurrency(this.getCurrency());
-        targetAccount.transactions.setTargetCurrency(targetAccount.getCurrency());
-        targetAccount.transactions.setSourceIban(this.getIban());
-        targetAccount.transactions.setTargetIban(targetAccount.getIban());
-        targetAccount.transactions.setTimeStamp(Timestamp.valueOf(LocalDateTime.now()));
-    }
+//    private void updateTransactions(BankAccount sourceAccount, BankAccount targetAccount, double exchangeRate) {
+//        sourceAccount.transactions.setExchangeRate(exchangeRate);
+//        sourceAccount.transactions.setSourceBank(this.getBankInstitution());
+//        sourceAccount.transactions.setTargetBank(targetAccount.getBankInstitution());
+//        sourceAccount.transactions.setSourceCurrency(this.getCurrency());
+//        sourceAccount.transactions.setTargetCurrency(targetAccount.getCurrency());
+//        sourceAccount.transactions.setSourceIban(this.getIban());
+//        sourceAccount.transactions.setTargetIban(targetAccount.getIban());
+//        sourceAccount.transactions.setTimeStamp(Timestamp.valueOf(LocalDateTime.now()));
+//
+//        targetAccount.transactions.setExchangeRate(exchangeRate);
+//        targetAccount.transactions.setSourceBank(this.getBankInstitution());
+//        targetAccount.transactions.setTargetBank(targetAccount.getBankInstitution());
+//        targetAccount.transactions.setSourceCurrency(this.getCurrency());
+//        targetAccount.transactions.setTargetCurrency(targetAccount.getCurrency());
+//        targetAccount.transactions.setSourceIban(this.getIban());
+//        targetAccount.transactions.setTargetIban(targetAccount.getIban());
+//        targetAccount.transactions.setTimeStamp(Timestamp.valueOf(LocalDateTime.now()));
+//    }
 
     @Override
     public String toString() {

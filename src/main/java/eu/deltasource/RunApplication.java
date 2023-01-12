@@ -27,10 +27,26 @@ public class RunApplication {
 //            bankAccount3.depositMoneyToAccount( 300);
 //            bankAccount3.withdrawMoneyFromAccount(750);
 
-            bankAccount.transferMoney(bankAccount2, 5);
-            bankAccount.transferMoney(bankAccount2, 5);
+//            bankAccount.transferMoney(bankAccount2, 5);
+//            bankAccount.transferMoney(bankAccount2, 5);
 
 //            bankAccount3.withdrawMoneyFromAccount(20);
+
+//            dsk.depositMoneyToAccount(bankAccount2, 250);
+//            dsk.depositMoneyToAccount(bankAccount3, 250);
+
+//            dsk.depositMoneyToAccount(bankAccount, 250);
+//            dsk.withdrawMoneyFromAccount(bankAccount, 20);
+//
+//            fibank.depositMoneyToAccount(bankAccount2, 200);
+//            fibank.withdrawMoneyFromAccount(bankAccount2, 50);
+//
+//            fibank.depositMoneyToAccount(bankAccount3, 250);
+//            fibank.withdrawMoneyFromAccount(bankAccount3, 25);
+
+
+            fibank.transferMoney(bankAccount, bankAccount2, 10);
+
 
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
