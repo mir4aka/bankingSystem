@@ -18,10 +18,9 @@ public class BankInstitution {
         this.priceList = new HashMap<>();
         this.priceList.put("Tax to same bank", 0.02);
         this.priceList.put("Tax to different bank", 0.05);
-        this.priceList.put("Exchange to same bank", 1.05);
-        this.priceList.put("Exchange to different bank", 1.15);
+        this.priceList.put("Exchange to same currency", 1.05);
+        this.priceList.put("Exchange to different currency", 1.15);
     }
-
     public void withdrawMoneyFromAccount(BankAccount account, double amountToWithdraw) {
         double moneyAvailable = account.getAvailableAmount();
 
@@ -67,9 +66,6 @@ public class BankInstitution {
     }
 
     public void transferMoney(BankAccount sourceAccount, BankAccount targetAccount, double amountToDeposit) {
-        double fees = 0;
-
-        double exchangeRate;
 
         if (!sourceAccount.getAccountType().equals("CurrentAccount") || !targetAccount.getAccountType().equals("CurrentAccount")) {
             throw new IllegalArgumentException("Transfers are only allowed between two Current accounts.\n");
@@ -83,16 +79,20 @@ public class BankInstitution {
             throw new IllegalArgumentException("Not enough money in the source account.\n");
         }
 
+        double fees = 0;
+
         if (!sourceAccount.getBankInstitution().getBankName().equals(targetAccount.getBankInstitution().getBankName())) {
             fees += sourceAccount.getBankInstitution().getPriceList().get("Tax to different bank");
         } else {
             fees += sourceAccount.getBankInstitution().getPriceList().get("Tax to same bank");
         }
 
+        double exchangeRate;
+
         if (!sourceAccount.getCurrency().equals(targetAccount.getCurrency())) {
-            exchangeRate = sourceAccount.getBankInstitution().getPriceList().get("Exchange to different bank");
+            exchangeRate = sourceAccount.getBankInstitution().getPriceList().get("Exchange to different currency");
         } else {
-            exchangeRate = sourceAccount.getBankInstitution().getPriceList().get("Exchange to same bank");
+            exchangeRate = sourceAccount.getBankInstitution().getPriceList().get("Exchange to same currency");
         }
         double finalAmount = amountToDeposit * exchangeRate;
 
@@ -110,6 +110,8 @@ public class BankInstitution {
 
         moneyInMyAccount -= finalAmount;
 
+        double allTAxes = finalAmount - amountToDeposit;
+
         sourceAccount.setAvailableAmount(moneyInMyAccount);
 
         double availableAmount = targetAccount.getAvailableAmount();
@@ -118,8 +120,8 @@ public class BankInstitution {
         ArrayDeque<String> sourceAccountTransactions = sourceAccount.getTransactions().getAmountTransferred();
         ArrayDeque<String> targetAccountTransactions = targetAccount.getTransactions().getAmountTransferred();
 
-        sourceAccountTransactions.push(String.format("Amount transferred -> -%.2f lv.", amountToDeposit) );
-        targetAccountTransactions.push(String.format("Amount transferred -> +%.2f", amountToDeposit));
+        sourceAccountTransactions.push(String.format("Amount transferred -> -%.2f lv. (+%.2f lv. Taxes)", amountToDeposit, allTAxes) );
+        targetAccountTransactions.push(String.format("Amount transferred -> +%.2f lv.", amountToDeposit));
 
         updateTransactions(sourceAccount, targetAccount, exchangeRate);
     }

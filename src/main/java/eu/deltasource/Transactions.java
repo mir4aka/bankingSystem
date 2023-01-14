@@ -15,7 +15,6 @@ public class Transactions {
     private double exchangeRate;
     private Timestamp timeStamp;
 
-
     public String getSourceIban() {
         return sourceIban;
     }

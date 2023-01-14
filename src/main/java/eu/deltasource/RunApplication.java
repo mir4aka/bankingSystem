@@ -46,6 +46,7 @@ public class RunApplication {
 
 
             fibank.transferMoney(bankAccount, bankAccount2, 10);
+            dsk.transferMoney(bankAccount2, bankAccount3, 5);
 
 
         } catch (IllegalArgumentException e) {
