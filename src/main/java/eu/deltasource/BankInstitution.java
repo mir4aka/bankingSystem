@@ -7,20 +7,21 @@ import java.util.*;
 public class BankInstitution {
     private String bankName;
     private String bankAddress;
-    private int numberOfCustomers;
-    private BankAccount account;
+    private Owner owner = new Owner();
+    private Map<String, Integer> numberOfCustomers;
     private Map<String, Double> priceList;
 
-    public BankInstitution(String bankName, String bankAddress, int numberOfCustomers) {
+    public BankInstitution(String bankName, String bankAddress) {
         this.bankName = bankName;
         this.bankAddress = bankAddress;
-        this.numberOfCustomers = numberOfCustomers;
+        this.numberOfCustomers = new HashMap<>();
         this.priceList = new HashMap<>();
         this.priceList.put("Tax to same bank", 0.02);
         this.priceList.put("Tax to different bank", 0.05);
         this.priceList.put("Exchange to same currency", 1.05);
         this.priceList.put("Exchange to different currency", 1.15);
     }
+
     public void withdrawMoneyFromAccount(BankAccount account, double amountToWithdraw) {
         double moneyAvailable = account.getAvailableAmount();
 
@@ -28,7 +29,7 @@ public class BankInstitution {
             throw new IllegalArgumentException("Not enough money to withdraw.");
         }
 
-        if(!this.getBankName().equals(account.getBankInstitution().getBankName())) {
+        if (!this.getBankName().equals(account.getBankInstitution().getBankName())) {
             String message = String.format("You can't withdraw money from bank %s, because your bank is %s.\n", this.getBankName(), account.getBankInstitution().getBankName());
             throw new IllegalArgumentException(message);
         }
@@ -38,8 +39,8 @@ public class BankInstitution {
         }
 
         account.setAvailableAmount(moneyAvailable);
-        ArrayDeque<String> amountTransferred = account.getTransactions().getAmountTransferred();
-        amountTransferred.push(String.format("Withdrawn money -> -%.2f lv.", amountToWithdraw));
+        Map<String, Timestamp> amountTransferred = account.getTransactions().getAmountTransferred();
+        amountTransferred.put(String.format("Withdrawn money -> -%.2f lv.", amountToWithdraw), Timestamp.valueOf(LocalDateTime.now()));
 
         account.getTransactions().setAmountTransferred(amountTransferred);
     }
@@ -47,7 +48,7 @@ public class BankInstitution {
     public void depositMoneyToAccount(BankAccount account, double amountToDeposit) {
         double moneyAvailable = account.getAvailableAmount();
 
-        if(!this.getBankName().equals(account.getBankInstitution().getBankName())) {
+        if (!this.getBankName().equals(account.getBankInstitution().getBankName())) {
             String message = String.format("You can't deposit from bank %s to bank %s" +
                     ", because they are not the same bank. \n", this.getBankName(), account.getBankInstitution().getBankName());
             throw new IllegalArgumentException(message);
@@ -59,8 +60,8 @@ public class BankInstitution {
 
         account.setAvailableAmount(moneyAvailable);
 
-        ArrayDeque<String> amountTransferred = account.getTransactions().getAmountTransferred();
-        amountTransferred.push(String.format("Deposited money -> +%.2f lv.", amountToDeposit));
+        Map<String, Timestamp> amountTransferred = account.getTransactions().getAmountTransferred();
+        amountTransferred.put(String.format("Deposited money -> +%.2f lv.", amountToDeposit), Timestamp.valueOf(LocalDateTime.now()));
 
         account.getTransactions().setAmountTransferred(amountTransferred);
     }
@@ -77,6 +78,10 @@ public class BankInstitution {
 
         if (sourceAccount.getAvailableAmount() < amountToDeposit) {
             throw new IllegalArgumentException("Not enough money in the source account.\n");
+        }
+
+        if (!getBankName().equals(sourceAccount.getBankInstitution().getBankName())) {
+            throw new IllegalArgumentException("Source account's bank is " + sourceAccount.getBankInstitution().getBankName());
         }
 
         double fees = 0;
@@ -100,7 +105,7 @@ public class BankInstitution {
 
         double moneyInMyAccount = sourceAccount.getAvailableAmount();
 
-        if(moneyInMyAccount < finalAmount) {
+        if (moneyInMyAccount < finalAmount) {
             double negativeBalance = moneyInMyAccount - finalAmount;
             String message = String.format("You don't have enough money for that kind of transaction, " +
                     " otherwise the result of your balance would be %.2f lv.\n", negativeBalance);
@@ -117,25 +122,25 @@ public class BankInstitution {
         double availableAmount = targetAccount.getAvailableAmount();
         targetAccount.setAvailableAmount(availableAmount + amountToDeposit);
 
-        ArrayDeque<String> sourceAccountTransactions = sourceAccount.getTransactions().getAmountTransferred();
-        ArrayDeque<String> targetAccountTransactions = targetAccount.getTransactions().getAmountTransferred();
+        Map<String, Timestamp> sourceAccountTransactions = sourceAccount.getTransactions().getAmountTransferred();
+        Map<String, Timestamp> targetAccountTransactions = targetAccount.getTransactions().getAmountTransferred();
 
-        sourceAccountTransactions.push(String.format("Amount transferred -> -%.2f lv. (+%.2f lv. Taxes)", amountToDeposit, allTAxes) );
-        targetAccountTransactions.push(String.format("Amount transferred -> +%.2f lv.", amountToDeposit));
+        sourceAccountTransactions.put(String.format("Amount transferred -> -%.2f lv. (+%.2f lv. Taxes)", amountToDeposit, allTAxes), Timestamp.valueOf(LocalDateTime.now()));
+        targetAccountTransactions.put(String.format("Amount transferred -> +%.2f lv.", amountToDeposit),Timestamp.valueOf(LocalDateTime.now()));
 
         updateTransactions(sourceAccount, targetAccount, exchangeRate);
     }
 
-    public String getBankName() {
+    private String getBankName() {
         return bankName;
     }
 
-    public Map<String, Double> getPriceList() {
+    private Map<String, Double> getPriceList() {
         return priceList;
     }
 
-    public BankAccount getAccount() {
-        return account;
+    public Map<String, Integer> getNumberOfCustomers() {
+        return this.numberOfCustomers;
     }
 
     private void updateTransactions(BankAccount sourceAccount, BankAccount targetAccount, double exchangeRate) {
@@ -162,7 +167,7 @@ public class BankInstitution {
     public String toString() {
         return "The name of the bank is: " + this.bankName + System.lineSeparator() +
                 "The address of the bank is: " + this.bankAddress + System.lineSeparator() +
-                "Number of customers of the bank: " + this.numberOfCustomers + System.lineSeparator();
+                "Number of customers of the bank: " + this.numberOfCustomers.size() + System.lineSeparator();
     }
 
 }

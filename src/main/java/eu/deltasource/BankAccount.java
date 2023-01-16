@@ -1,8 +1,8 @@
 package eu.deltasource;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.ArrayDeque;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class BankAccount {
     private Owner owner;
@@ -20,9 +20,34 @@ public class BankAccount {
         this.currency = currency;
         this.availableAmount = availableAmount;
         this.accountType = accountType;
-
         this.transactions = new Transactions();
+        assignsAccountTypeToAccount(accountType);
+        addsAccountToBank();
     }
+
+    public void assignsAccountTypeToAccount(String accountType) {
+
+        if (this.owner.getAccountTypes().contains("CurrentAccount") && this.owner.getAccountTypes().contains("SavingsAccount")) {
+            throw new AlreadyExistingIdException("You already have two accounts. (Current and Savings)\n");
+        }
+
+        this.owner.assignAccounts(accountType);
+    }
+
+    private void addsAccountToBank() {
+        Map<String, Integer> numberOfCustomers = this.getBankInstitution().getNumberOfCustomers();
+
+        if (!numberOfCustomers.containsKey(owner.getId())) {
+            numberOfCustomers.putIfAbsent(owner.getId(), 1);
+        } else {
+            if(numberOfCustomers.containsKey(owner.getId())) {
+                throw new AlreadyExistingIdException("A person with that id already has an account in this bank.");
+            }
+            int numberOfAccounts = numberOfCustomers.get(owner.getId());
+            numberOfCustomers.put(owner.getId(), numberOfAccounts + 1);
+        }
+    }
+
 //    public void withdrawMoneyFromAccount(double amountToWithdraw) {
 //        double moneyAvailable = getAvailableAmount();
 //
@@ -134,7 +159,7 @@ public class BankAccount {
     public String allTransactions() {
         StringBuilder sb = new StringBuilder();
 
-        ArrayDeque<String> amountTransferred = getTransactions().getAmountTransferred();
+        Map<String, Timestamp> amountTransferred = getTransactions().getAmountTransferred();
 
         if (amountTransferred.isEmpty()) {
             sb.append("There are no transactions for the account of ").append(owner.getFirstName()).append(" ").append(owner.getLastName()).append(System.lineSeparator());
@@ -143,8 +168,10 @@ public class BankAccount {
 
         sb.append("Transactions of account ").append(owner.getFirstName()).append(" ").append(owner.getLastName()).append(": ").append(System.lineSeparator());
 
-        for (String transaction : amountTransferred) {
-            sb.append(transaction).append(System.lineSeparator());
+        for (Map.Entry<String, Timestamp> transaction : amountTransferred.entrySet()) {
+            String timeStamp = new SimpleDateFormat("dd.MM.yyyy").format(transaction.getValue());
+
+            sb.append(transaction.getKey()).append(" at ").append(timeStamp).append(System.lineSeparator());
         }
 
         return sb.toString();
@@ -173,7 +200,6 @@ public class BankAccount {
     @Override
     public String toString() {
         return String.format("Account name = " + "%s" + " " + "%s" +
-                "\nAccount type = " + "%s" +
-                "\nAvailableAmount = " + "%.2f" + " lv.\n", owner.getFirstName(), owner.getLastName(), this.accountType, this.availableAmount);
+                "\nAvailableAmount = " + "%.2f" + " lv.\n", owner.getFirstName(), owner.getLastName(), this.availableAmount);
     }
 }
