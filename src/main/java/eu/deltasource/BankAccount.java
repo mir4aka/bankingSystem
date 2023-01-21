@@ -210,6 +210,6 @@ public class BankAccount {
     @Override
     public String toString() {
         return String.format("Account name = " + "%s" + " " + "%s" +
-                "\nAvailableAmount = " + "%.2f" + " lv.\n", owner.getFirstName(), owner.getLastName(), this.availableAmount);
+                "\nAvailableAmount = " + "%.2f" + " %s\n", owner.getFirstName(), owner.getLastName(), this.availableAmount, getCurrency());
     }
 }

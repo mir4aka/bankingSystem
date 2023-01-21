@@ -94,14 +94,21 @@ public class BankInstitution {
         double exchangeRate;
 
         if (!sourceAccount.getCurrency().equals(targetAccount.getCurrency())) {
+            String sourceAccountCurrency = sourceAccount.getCurrency();
+            String targetAccountCurrency = targetAccount.getCurrency();
+
+            amountToDeposit = checkCurrenciesAndCalculateTheAmountToBeDeposited(amountToDeposit, sourceAccountCurrency, targetAccountCurrency);
+
             exchangeRate = sourceAccount.getBankInstitution().getPriceList().get("Exchange to different currency");
         } else {
             exchangeRate = sourceAccount.getBankInstitution().getPriceList().get("Exchange to same currency");
         }
 
+
         double amountWithTaxes = (amountToDeposit * exchangeRate) + fees;
 
         double moneyInSourceAccount = sourceAccount.getAvailableAmount();
+        double moneyInTargetAccount = targetAccount.getAvailableAmount();
 
         if (moneyInSourceAccount < amountWithTaxes) {
             double negativeBalance = moneyInSourceAccount - amountWithTaxes;
@@ -117,16 +124,38 @@ public class BankInstitution {
 
         sourceAccount.setAvailableAmount(moneyInSourceAccount);
 
-        double moneyInTargetAccount = targetAccount.getAvailableAmount();
         targetAccount.setAvailableAmount(moneyInTargetAccount + amountToDeposit);
 
         Map<String, Timestamp> sourceAccountTransactions = sourceAccount.getTransactions().getAmountTransferred();
         Map<String, Timestamp> targetAccountTransactions = targetAccount.getTransactions().getAmountTransferred();
 
-        sourceAccountTransactions.put(String.format("Amount transferred -> -%.2f %s (+%.2f lv. Taxes)", amountToDeposit, sourceAccount.getCurrency(), allTAxes), Timestamp.valueOf(LocalDateTime.now()));
-        targetAccountTransactions.put(String.format("Amount transferred -> +%.2f %s", amountToDeposit, targetAccount.getCurrency()),Timestamp.valueOf(LocalDateTime.now()));
+        sourceAccountTransactions.put(String.format("Amount transferred -> -%.2f %s (%.2f %s Taxes)", amountWithTaxes, sourceAccount.getCurrency(), allTAxes, sourceAccount.getCurrency()), Timestamp.valueOf(LocalDateTime.now()));
+        targetAccountTransactions.put(String.format("Amount transferred -> +%.2f %s", amountToDeposit, targetAccount.getCurrency()), Timestamp.valueOf(LocalDateTime.now()));
 
         updateTransactions(sourceAccount, targetAccount, exchangeRate);
+    }
+
+    private double checkCurrenciesAndCalculateTheAmountToBeDeposited(double amountToDeposit, String sourceAccountCurrency, String targetAccountCurrency) {
+        if (sourceAccountCurrency.equals("BGN")) {
+            if (targetAccountCurrency.equals("USD")) {
+                amountToDeposit = amountToDeposit * 0.55;
+            } else if (targetAccountCurrency.equals("GBP")) {
+                amountToDeposit = amountToDeposit * 0.45;
+            }
+        } else if (sourceAccountCurrency.equals("USD")) {
+            if (targetAccountCurrency.equals("BGN")) {
+                amountToDeposit = amountToDeposit * 1.80;
+            } else if(targetAccountCurrency.equals("GBP")) {
+                amountToDeposit = amountToDeposit * 0.80;
+            }
+        } else if(sourceAccountCurrency.equals("GBP")) {
+            if(targetAccountCurrency.equals("BGN")) {
+                amountToDeposit = amountToDeposit * 2.23;
+            } else if(targetAccountCurrency.equals("USD")) {
+                amountToDeposit = amountToDeposit * 1.24;
+            }
+        }
+        return amountToDeposit;
     }
 
     private void updateTransactions(BankAccount sourceAccount, BankAccount targetAccount, double exchangeRate) {
