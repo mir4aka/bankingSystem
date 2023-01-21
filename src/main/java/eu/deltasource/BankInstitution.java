@@ -1,5 +1,6 @@
 package eu.deltasource;
 
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;

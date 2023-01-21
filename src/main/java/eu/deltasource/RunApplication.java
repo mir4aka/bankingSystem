@@ -14,21 +14,13 @@ public class RunApplication {
 
         try {
             dsk.transferMoney(nikic, mirkic, 10);
+            dsk.transferMoney(nikic, mirkic, 10);
 
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
         }
 
-        System.out.println(niki4);
-        System.out.println(mirki4);
-
-        System.out.println(dsk);
-
-        System.out.println(nikic);
-        System.out.println(mirkic);
-
-        System.out.println(nikic.allTransactions());
-        System.out.println(mirkic.allTransactions());
+        System.out.println(nikic.getBankStatements());
 
 
 

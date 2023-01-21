@@ -44,7 +44,7 @@ public class BankAccount {
         Map<String, Integer> numberOfCustomers = this.getBankInstitution().getNumberOfCustomers();
 
         if (numberOfCustomers.containsKey(owner.getId())) {
-            throw new AlreadyExistingIdException("A person with that id already has an account in this bank.");
+            throw new AlreadyExistingIdException("A person with that id already has an account in this bank.\n");
         }
 
         numberOfCustomers.putIfAbsent(owner.getId(), 1);
@@ -69,6 +69,19 @@ public class BankAccount {
         }
 
         return sb.toString();
+    }
+
+    public String getBankStatements() {
+        StringBuilder message = new StringBuilder();
+
+        Transactions accountTransactions = this.getTransactions();
+        message.append("The source iban is: " + accountTransactions.getSourceIban()).append(System.lineSeparator()).append("The target iban is: " +accountTransactions.getTargetIban()).append(System.lineSeparator())
+                .append("Source bank: " +accountTransactions.getSourceBank()).append(System.lineSeparator()).append("Target bank: " +accountTransactions.getTargetBank()).append(System.lineSeparator()).append(accountTransactions.getAmountTransferred()).append(System.lineSeparator())
+                .append("The source currency is: " +accountTransactions.getSourceCurrency()).append(System.lineSeparator()).append("The target currency is: " +accountTransactions.getTargetCurrency()).append(System.lineSeparator())
+                .append("The exchange rate is: " + accountTransactions.getExchangeRate()).append(System.lineSeparator()).append(accountTransactions.getTimeStamp()).append(System.lineSeparator());
+
+
+        return message.toString();
     }
 
 //    public void withdrawMoneyFromAccount(double amountToWithdraw) {
