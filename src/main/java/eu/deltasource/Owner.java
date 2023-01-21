@@ -9,11 +9,10 @@ public class Owner {
     private String id;
     private Set<String> accountTypes;
 
-    public Owner(String firstName, String lastName, String id) {
+    public Owner(String firstName, String lastName) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.accountTypes = new HashSet<>(2);
-        this.id = id;
     }
 
     public Owner() {
@@ -34,6 +33,10 @@ public class Owner {
 
     public String getId() {
         return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public Set<String> getAccountTypes() {

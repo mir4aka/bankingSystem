@@ -7,7 +7,6 @@ import java.util.*;
 public class BankInstitution {
     private String bankName;
     private String bankAddress;
-    private Owner owner = new Owner();
     private Map<String, Integer> numberOfCustomers;
     private Map<String, Double> priceList;
 
@@ -40,7 +39,7 @@ public class BankInstitution {
 
         account.setAvailableAmount(moneyAvailable);
         Map<String, Timestamp> amountTransferred = account.getTransactions().getAmountTransferred();
-        amountTransferred.put(String.format("Withdrawn money -> -%.2f lv.", amountToWithdraw), Timestamp.valueOf(LocalDateTime.now()));
+        amountTransferred.put(String.format("Withdrawn money -> -%.2f %s", amountToWithdraw, account.getCurrency()), Timestamp.valueOf(LocalDateTime.now()));
 
         account.getTransactions().setAmountTransferred(amountTransferred);
     }
@@ -61,7 +60,7 @@ public class BankInstitution {
         account.setAvailableAmount(moneyAvailable);
 
         Map<String, Timestamp> amountTransferred = account.getTransactions().getAmountTransferred();
-        amountTransferred.put(String.format("Deposited money -> +%.2f lv.", amountToDeposit), Timestamp.valueOf(LocalDateTime.now()));
+        amountTransferred.put(String.format("Deposited money -> +%.2f %s", amountToDeposit, account.getCurrency()), Timestamp.valueOf(LocalDateTime.now()));
 
         account.getTransactions().setAmountTransferred(amountTransferred);
     }
@@ -99,48 +98,35 @@ public class BankInstitution {
         } else {
             exchangeRate = sourceAccount.getBankInstitution().getPriceList().get("Exchange to same currency");
         }
-        double finalAmount = amountToDeposit * exchangeRate;
 
-        finalAmount += fees;
+        double amountWithTaxes = (amountToDeposit * exchangeRate) + fees;
 
-        double moneyInMyAccount = sourceAccount.getAvailableAmount();
+        double moneyInSourceAccount = sourceAccount.getAvailableAmount();
 
-        if (moneyInMyAccount < finalAmount) {
-            double negativeBalance = moneyInMyAccount - finalAmount;
+        if (moneyInSourceAccount < amountWithTaxes) {
+            double negativeBalance = moneyInSourceAccount - amountWithTaxes;
             String message = String.format("You don't have enough money for that kind of transaction, " +
-                    " otherwise the result of your balance would be %.2f lv.\n", negativeBalance);
+                    " otherwise the result of your balance would be %.2f %s\n", negativeBalance, sourceAccount.getCurrency());
 
             throw new IllegalArgumentException(message);
         }
 
-        moneyInMyAccount -= finalAmount;
+        moneyInSourceAccount -= amountWithTaxes;
 
-        double allTAxes = finalAmount - amountToDeposit;
+        double allTAxes = amountWithTaxes - amountToDeposit;
 
-        sourceAccount.setAvailableAmount(moneyInMyAccount);
+        sourceAccount.setAvailableAmount(moneyInSourceAccount);
 
-        double availableAmount = targetAccount.getAvailableAmount();
-        targetAccount.setAvailableAmount(availableAmount + amountToDeposit);
+        double moneyInTargetAccount = targetAccount.getAvailableAmount();
+        targetAccount.setAvailableAmount(moneyInTargetAccount + amountToDeposit);
 
         Map<String, Timestamp> sourceAccountTransactions = sourceAccount.getTransactions().getAmountTransferred();
         Map<String, Timestamp> targetAccountTransactions = targetAccount.getTransactions().getAmountTransferred();
 
-        sourceAccountTransactions.put(String.format("Amount transferred -> -%.2f lv. (+%.2f lv. Taxes)", amountToDeposit, allTAxes), Timestamp.valueOf(LocalDateTime.now()));
-        targetAccountTransactions.put(String.format("Amount transferred -> +%.2f lv.", amountToDeposit),Timestamp.valueOf(LocalDateTime.now()));
+        sourceAccountTransactions.put(String.format("Amount transferred -> -%.2f %s (+%.2f lv. Taxes)", amountToDeposit, sourceAccount.getCurrency(), allTAxes), Timestamp.valueOf(LocalDateTime.now()));
+        targetAccountTransactions.put(String.format("Amount transferred -> +%.2f %s", amountToDeposit, targetAccount.getCurrency()),Timestamp.valueOf(LocalDateTime.now()));
 
         updateTransactions(sourceAccount, targetAccount, exchangeRate);
-    }
-
-    private String getBankName() {
-        return bankName;
-    }
-
-    private Map<String, Double> getPriceList() {
-        return priceList;
-    }
-
-    public Map<String, Integer> getNumberOfCustomers() {
-        return this.numberOfCustomers;
     }
 
     private void updateTransactions(BankAccount sourceAccount, BankAccount targetAccount, double exchangeRate) {
@@ -161,6 +147,18 @@ public class BankInstitution {
         targetAccount.getTransactions().setSourceIban(sourceAccount.getIban());
         targetAccount.getTransactions().setTargetIban(targetAccount.getIban());
         targetAccount.getTransactions().setTimeStamp(Timestamp.valueOf(LocalDateTime.now()));
+    }
+
+    private String getBankName() {
+        return bankName;
+    }
+
+    private Map<String, Double> getPriceList() {
+        return priceList;
+    }
+
+    public Map<String, Integer> getNumberOfCustomers() {
+        return this.numberOfCustomers;
     }
 
     @Override

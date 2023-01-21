@@ -13,11 +13,12 @@ public class BankAccount {
     private double availableAmount;
     private final String accountType;
 
-    public BankAccount(Owner owner, BankInstitution bankInstitution, String iban, String currency, double availableAmount, String accountType) {
+    public BankAccount(Owner owner, String ownerId, BankInstitution bankInstitution, String iban, String currency, double availableAmount, String accountType) {
         this.owner = owner;
+        this.owner.setId(ownerId);
         this.bankInstitution = bankInstitution;
         this.iban = iban;
-        this.currency = currency;
+        this.setCurrency(currency);
         this.availableAmount = availableAmount;
         this.accountType = accountType;
         this.transactions = new Transactions();
@@ -25,7 +26,7 @@ public class BankAccount {
         addsAccountToBank();
     }
 
-    public void assignsAccountTypeToAccount(String accountType) {
+    private void assignsAccountTypeToAccount(String accountType) {
 
         if (this.owner.getAccountTypes().contains("CurrentAccount") && this.owner.getAccountTypes().contains("SavingsAccount")) {
             throw new AlreadyExistingIdException("You already have two accounts. (Current and Savings)\n");
@@ -37,15 +38,32 @@ public class BankAccount {
     private void addsAccountToBank() {
         Map<String, Integer> numberOfCustomers = this.getBankInstitution().getNumberOfCustomers();
 
-        if (!numberOfCustomers.containsKey(owner.getId())) {
-            numberOfCustomers.putIfAbsent(owner.getId(), 1);
-        } else {
-            if(numberOfCustomers.containsKey(owner.getId())) {
-                throw new AlreadyExistingIdException("A person with that id already has an account in this bank.");
-            }
-            int numberOfAccounts = numberOfCustomers.get(owner.getId());
-            numberOfCustomers.put(owner.getId(), numberOfAccounts + 1);
+        if (numberOfCustomers.containsKey(owner.getId())) {
+            throw new AlreadyExistingIdException("A person with that id already has an account in this bank.");
         }
+
+        numberOfCustomers.putIfAbsent(owner.getId(), 1);
+    }
+
+    public String allTransactions() {
+        StringBuilder sb = new StringBuilder();
+
+        Map<String, Timestamp> amountTransferred = getTransactions().getAmountTransferred();
+
+        if (amountTransferred.isEmpty()) {
+            sb.append("There are no transactions for the account of ").append(owner.getFirstName()).append(" ").append(owner.getLastName()).append(System.lineSeparator());
+            return sb.toString();
+        }
+
+        sb.append("Transactions of account ").append(owner.getFirstName()).append(" ").append(owner.getLastName()).append(": ").append(System.lineSeparator());
+
+        for (Map.Entry<String, Timestamp> transaction : amountTransferred.entrySet()) {
+            String timeStamp = new SimpleDateFormat("dd.MM.yyyy").format(transaction.getValue());
+
+            sb.append(transaction.getKey()).append(" on ").append(timeStamp).append(System.lineSeparator());
+        }
+
+        return sb.toString();
     }
 
 //    public void withdrawMoneyFromAccount(double amountToWithdraw) {
@@ -140,6 +158,14 @@ public class BankAccount {
         return currency;
     }
 
+    public void setCurrency(String currency) {
+        if (currency.equals("BGN") || currency.equals("USD") || currency.equals("GBP")) {
+            this.currency = currency;
+        } else {
+            throw new IllegalArgumentException("Invalid currency for a bank account. You may select BGN, USD or GBP.");
+        }
+    }
+
     public double getAvailableAmount() {
         return availableAmount;
     }
@@ -154,27 +180,6 @@ public class BankAccount {
 
     public String getAccountType() {
         return accountType;
-    }
-
-    public String allTransactions() {
-        StringBuilder sb = new StringBuilder();
-
-        Map<String, Timestamp> amountTransferred = getTransactions().getAmountTransferred();
-
-        if (amountTransferred.isEmpty()) {
-            sb.append("There are no transactions for the account of ").append(owner.getFirstName()).append(" ").append(owner.getLastName()).append(System.lineSeparator());
-            return sb.toString();
-        }
-
-        sb.append("Transactions of account ").append(owner.getFirstName()).append(" ").append(owner.getLastName()).append(": ").append(System.lineSeparator());
-
-        for (Map.Entry<String, Timestamp> transaction : amountTransferred.entrySet()) {
-            String timeStamp = new SimpleDateFormat("dd.MM.yyyy").format(transaction.getValue());
-
-            sb.append(transaction.getKey()).append(" at ").append(timeStamp).append(System.lineSeparator());
-        }
-
-        return sb.toString();
     }
 
 //    private void updateTransactions(BankAccount sourceAccount, BankAccount targetAccount, double exchangeRate) {
