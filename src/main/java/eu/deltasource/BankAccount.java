@@ -13,7 +13,7 @@ public class BankAccount {
     private double availableAmount;
     private final String accountType;
 
-    public BankAccount(Owner owner, String ownerId, BankInstitution bankInstitution, String iban, String currency, double availableAmount, String accountType) {
+    public BankAccount(Owner owner, String ownerId, BankInstitution bankInstitution, String iban, String currency, double availableAmount, String accountType){
         this.owner = owner;
         this.owner.setId(ownerId);
         this.bankInstitution = bankInstitution;
@@ -22,8 +22,13 @@ public class BankAccount {
         this.availableAmount = availableAmount;
         this.accountType = accountType;
         this.transactions = new Transactions();
-        assignsAccountTypeToAccount(accountType);
-        addsAccountToBank();
+
+        try {
+            assignsAccountTypeToAccount(accountType);
+            addsAccountToBank();
+        } catch (AlreadyExistingIdException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private void assignsAccountTypeToAccount(String accountType) {

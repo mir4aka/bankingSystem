@@ -10,7 +10,7 @@ public class RunApplication {
 
         BankAccount nikic = new BankAccount(niki4, "02", dsk, "frew", "BGN", 30, "CurrentAccount");
 
-        BankAccount mirkic = new BankAccount(mirki4, "012", dsk, "frewe", "USD", 33, "CurrentAccount");
+        BankAccount mirkic = new BankAccount(mirki4, "02", dsk, "frewe", "USD", 33, "CurrentAccount");
 
         try {
             dsk.transferMoney(nikic, mirkic, 2);
