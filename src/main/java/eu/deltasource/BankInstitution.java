@@ -39,10 +39,14 @@ public class BankInstitution {
         }
 
         account.setAvailableAmount(moneyAvailable);
-        Map<String, Timestamp> amountTransferred = account.getTransactions().getAmountTransferred();
-        amountTransferred.put(String.format("Withdrawn money -> -%.2f %s", amountToWithdraw, account.getCurrency()), Timestamp.valueOf(LocalDateTime.now()));
+
+        ArrayDeque<String> amountTransferred = account.getTransactions().getAmountTransferred();
+
+        amountTransferred.push(String.format("Withdrawn money -> -%.2f %s", amountToWithdraw, account.getCurrency()));
 
         account.getTransactions().setAmountTransferred(amountTransferred);
+
+        account.getAccountTransactions().add(account.getTransactions());
     }
 
     public void depositMoneyToAccount(BankAccount account, double amountToDeposit) {
@@ -60,8 +64,9 @@ public class BankInstitution {
 
         account.setAvailableAmount(moneyAvailable);
 
-        Map<String, Timestamp> amountTransferred = account.getTransactions().getAmountTransferred();
-        amountTransferred.put(String.format("Deposited money -> +%.2f %s", amountToDeposit, account.getCurrency()), Timestamp.valueOf(LocalDateTime.now()));
+        ArrayDeque<String> amountTransferred = account.getTransactions().getAmountTransferred();
+
+        amountTransferred.push(String.format("Deposited money -> +%.2f %s", amountToDeposit, account.getCurrency()));
 
         account.getTransactions().setAmountTransferred(amountTransferred);
     }
@@ -81,7 +86,7 @@ public class BankInstitution {
         }
 
         if (!getBankName().equals(sourceAccount.getBankInstitution().getBankName())) {
-            throw new IllegalArgumentException("Source account's bank is " + sourceAccount.getBankInstitution().getBankName());
+            throw new IllegalArgumentException(String.format("Source account's bank is %s, not %s.\n", sourceAccount.getBankInstitution().getBankName(), getBankName()));
         }
 
         double fees = 0;
@@ -127,13 +132,14 @@ public class BankInstitution {
 
         targetAccount.setAvailableAmount(moneyInTargetAccount + amountToDeposit);
 
-        Map<String, Timestamp> sourceAccountTransactions = sourceAccount.getTransactions().getAmountTransferred();
-        Map<String, Timestamp> targetAccountTransactions = targetAccount.getTransactions().getAmountTransferred();
+        ArrayDeque<String> amountTransferred = sourceAccount.getTransactions().getAmountTransferred();
+        ArrayDeque<String> targetAmountTransferred = targetAccount.getTransactions().getAmountTransferred();
 
-        sourceAccountTransactions.put(String.format("Amount transferred -> -%.2f %s (%.2f %s Taxes)", amountWithTaxes, sourceAccount.getCurrency(), allTAxes, sourceAccount.getCurrency()), Timestamp.valueOf(LocalDateTime.now()));
-        targetAccountTransactions.put(String.format("Amount transferred -> +%.2f %s", amountToDeposit, targetAccount.getCurrency()), Timestamp.valueOf(LocalDateTime.now()));
+        amountTransferred.push(String.format("Amount transferred -> -%.2f %s (%.2f %s Taxes)", amountWithTaxes, sourceAccount.getCurrency(), allTAxes, sourceAccount.getCurrency()));
+        targetAmountTransferred.push(String.format("Amount transferred -> +%.2f %s", amountToDeposit, targetAccount.getCurrency()));
 
         updateTransactions(sourceAccount, targetAccount, exchangeRate);
+
     }
 
     private double checkCurrenciesAndCalculateTheAmountToBeDeposited(double amountToDeposit, String sourceAccountCurrency, String targetAccountCurrency) {
@@ -146,13 +152,13 @@ public class BankInstitution {
         } else if (sourceAccountCurrency.equals("USD")) {
             if (targetAccountCurrency.equals("BGN")) {
                 amountToDeposit = amountToDeposit * 1.80;
-            } else if(targetAccountCurrency.equals("GBP")) {
+            } else if (targetAccountCurrency.equals("GBP")) {
                 amountToDeposit = amountToDeposit * 0.80;
             }
-        } else if(sourceAccountCurrency.equals("GBP")) {
-            if(targetAccountCurrency.equals("BGN")) {
+        } else if (sourceAccountCurrency.equals("GBP")) {
+            if (targetAccountCurrency.equals("BGN")) {
                 amountToDeposit = amountToDeposit * 2.23;
-            } else if(targetAccountCurrency.equals("USD")) {
+            } else if (targetAccountCurrency.equals("USD")) {
                 amountToDeposit = amountToDeposit * 1.24;
             }
         }
@@ -177,9 +183,12 @@ public class BankInstitution {
         targetAccount.getTransactions().setSourceIban(sourceAccount.getIban());
         targetAccount.getTransactions().setTargetIban(targetAccount.getIban());
         targetAccount.getTransactions().setTimeStamp(Timestamp.valueOf(LocalDateTime.now()));
+
+        sourceAccount.getAccountTransactions().add(sourceAccount.getTransactions());
+        targetAccount.getAccountTransactions().add(targetAccount.getTransactions());
     }
 
-    private String getBankName() {
+    public String getBankName() {
         return bankName;
     }
 
@@ -193,9 +202,9 @@ public class BankInstitution {
 
     @Override
     public String toString() {
-        return "The name of the bank is: " + this.bankName + System.lineSeparator() +
+        return "" + this.bankName+ " bank" + System.lineSeparator() +
                 "The address of the bank is: " + this.bankAddress + System.lineSeparator() +
-                "Number of customers of the bank: " + this.numberOfCustomers.size() + System.lineSeparator();
+                "Number of customers of the bank: " + this.numberOfCustomers.size();
     }
 
 }
