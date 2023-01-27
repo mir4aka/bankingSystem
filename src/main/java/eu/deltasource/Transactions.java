@@ -2,6 +2,8 @@ package eu.deltasource;
 
 import java.sql.Timestamp;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 
@@ -10,7 +12,7 @@ public class Transactions {
     private String targetIban;
     private BankInstitution sourceBank;
     private BankInstitution targetBank;
-    private ArrayDeque<String> amountTransferred = new ArrayDeque<>();
+    private List<String> amountTransferred = new ArrayList<>();
     private String sourceCurrency;
     private String targetCurrency;
     private double exchangeRate;
@@ -32,12 +34,8 @@ public class Transactions {
         this.targetBank = targetBank;
     }
 
-    public ArrayDeque<String> getAmountTransferred() {
+    public List<String> getAmountTransferred() {
         return amountTransferred;
-    }
-
-    public void setAmountTransferred(ArrayDeque<String> amountTransferred) {
-        this.amountTransferred = amountTransferred;
     }
 
     public void setSourceCurrency(String sourceCurrency) {
@@ -60,16 +58,19 @@ public class Transactions {
     }
     @Override
     public String toString() {
-        String am = amountTransferred.stream().collect(Collectors.joining(System.lineSeparator()));
+        StringBuilder sb = new StringBuilder();
+        amountTransferred.forEach(t -> {
+            sb.append(t).append(System.lineSeparator());
+        });
 
         return  String.format("sourceIban = %s\n" +
                 "targetIban = %s\n" +
                 "sourceBank = %s\n" +
                 "targetBank = %s\n" +
-                "%s\n" +
+                "%s" +
                 "sourceCurrency = %s\n" +
                 "targetCurrency = %s\n" +
                 "exchangeRate= %.2f\n" +
-                "timeStamp = %s\n", sourceIban, targetIban, sourceBank,targetBank, am, sourceCurrency, targetCurrency, exchangeRate, timeStamp);
+                "timeStamp = %s\n", sourceIban, targetIban, sourceBank,targetBank, sb.toString(), sourceCurrency, targetCurrency, exchangeRate, timeStamp);
     }
 }

@@ -20,6 +20,7 @@ public class RunApplication {
             dsk.transferMoney(nikic, mirkic, 107);
             dsk.transferMoney(nikic, mirkic, 10);
             dsk.transferMoney(nikic, mirkic, 130);
+            dsk.transferMoney(nikic, mirkic, 20);
 
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());

@@ -1,7 +1,5 @@
 package eu.deltasource;
 
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class BankAccount {
@@ -33,7 +31,6 @@ public class BankAccount {
     }
 
     private void assignsAccountTypeToAccount(String accountType) {
-
         if (this.owner.getAccountTypes().contains("CurrentAccount") && this.owner.getAccountTypes().contains("SavingsAccount")) {
             throw new AlreadyExistingIdException("You already have two accounts. (Current and Savings)\n");
         }
@@ -64,7 +61,6 @@ public class BankAccount {
         sb.append("Transactions of account ").append(owner.getFirstName()).append(" ").append(owner.getLastName()).append(": ").append(System.lineSeparator());
 
         int numberOfTransactions = 1;
-
         for (int i = accountTransactions.size() - 1; i >= 0; i--) {
             Transactions currentTransaction = accountTransactions.get(i);
             sb.append(String.format("Transaction #%d\n", numberOfTransactions++));

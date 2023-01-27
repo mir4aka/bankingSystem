@@ -1,6 +1,5 @@
 package eu.deltasource;
 
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -40,11 +39,9 @@ public class BankInstitution {
 
         account.setAvailableAmount(moneyAvailable);
 
-        ArrayDeque<String> amountTransferred = account.getTransactions().getAmountTransferred();
+        String amountTransferred = (String.format("Withdrawn money -> -%.2f %s", amountToWithdraw, account.getCurrency()));
 
-        amountTransferred.push(String.format("Withdrawn money -> -%.2f %s", amountToWithdraw, account.getCurrency()));
-
-        account.getTransactions().setAmountTransferred(amountTransferred);
+        account.getTransactions().getAmountTransferred().add(amountTransferred);
 
         account.getAccountTransactions().add(account.getTransactions());
     }
@@ -64,30 +61,14 @@ public class BankInstitution {
 
         account.setAvailableAmount(moneyAvailable);
 
-        ArrayDeque<String> amountTransferred = account.getTransactions().getAmountTransferred();
+        String amountTransferred = (String.format("Deposited money -> +%.2f %s", amountToDeposit, account.getCurrency()));
 
-        amountTransferred.push(String.format("Deposited money -> +%.2f %s", amountToDeposit, account.getCurrency()));
-
-        account.getTransactions().setAmountTransferred(amountTransferred);
+        account.getTransactions().getAmountTransferred().add(amountTransferred);
     }
 
     public void transferMoney(BankAccount sourceAccount, BankAccount targetAccount, double amountToDeposit) {
 
-        if (!sourceAccount.getAccountType().equals("CurrentAccount") || !targetAccount.getAccountType().equals("CurrentAccount")) {
-            throw new IllegalArgumentException("Transfers are only allowed between two Current accounts.\n");
-        }
-
-        if (sourceAccount.getIban().equals(targetAccount.getIban())) {
-            throw new IllegalArgumentException("It is not allowed to transfer money to the same bank account.\n");
-        }
-
-        if (sourceAccount.getAvailableAmount() < amountToDeposit) {
-            throw new IllegalArgumentException("Not enough money in the source account.\n");
-        }
-
-        if (!getBankName().equals(sourceAccount.getBankInstitution().getBankName())) {
-            throw new IllegalArgumentException(String.format("Source account's bank is %s, not %s.\n", sourceAccount.getBankInstitution().getBankName(), getBankName()));
-        }
+        checkValidAccounts(sourceAccount, targetAccount, amountToDeposit);
 
         double fees = 0;
 
@@ -110,7 +91,6 @@ public class BankInstitution {
             exchangeRate = sourceAccount.getBankInstitution().getPriceList().get("Exchange to same currency");
         }
 
-
         double amountWithTaxes = (amountToDeposit * exchangeRate) + fees;
 
         double moneyInSourceAccount = sourceAccount.getAvailableAmount();
@@ -132,14 +112,57 @@ public class BankInstitution {
 
         targetAccount.setAvailableAmount(moneyInTargetAccount + amountToDeposit);
 
-        ArrayDeque<String> amountTransferred = sourceAccount.getTransactions().getAmountTransferred();
-        ArrayDeque<String> targetAmountTransferred = targetAccount.getTransactions().getAmountTransferred();
+        List<String> sourceAcc = sourceAccount.getTransactions().getAmountTransferred();
+        List<String> targetAcc = targetAccount.getTransactions().getAmountTransferred();
 
-        amountTransferred.push(String.format("Amount transferred -> -%.2f %s (%.2f %s Taxes)", amountWithTaxes, sourceAccount.getCurrency(), allTAxes, sourceAccount.getCurrency()));
-        targetAmountTransferred.push(String.format("Amount transferred -> +%.2f %s", amountToDeposit, targetAccount.getCurrency()));
+
+        if (sourceAcc.isEmpty()) {
+            sourceAcc.add(String.format("Amount transferred -> -%.2f %s (%.2f %s Taxes)", amountWithTaxes, sourceAccount.getCurrency(), allTAxes, sourceAccount.getCurrency()));
+        } else {
+            List<String> amountTransferred = sourceAccount.getTransactions().getAmountTransferred();
+            String originalMessage = sourceAccount.getTransactions().getAmountTransferred().get(0);
+            sourceAccount.getTransactions().getAmountTransferred().add(String.format("Amount transferred -> -%.2f %s (%.2f %s Taxes)", amountWithTaxes, sourceAccount.getCurrency(), allTAxes, sourceAccount.getCurrency()));
+            sourceAccount.getTransactions().getAmountTransferred().remove(0);
+
+//            originalMessage = String.format("Amount transferred -> -%.2f %s (%.2f %s Taxes)", amountWithTaxes, sourceAccount.getCurrency(), allTAxes, sourceAccount.getCurrency());
+
+            amountTransferred.add(originalMessage);
+
+            sourceAccount.getAccountTransactions().add(sourceAccount.getTransactions());
+        }
+
+        if (targetAcc.isEmpty()) {
+            targetAcc.add(String.format("Amount transferred -> +%.2f %s", amountToDeposit, targetAccount.getCurrency()));
+        } else {
+            List<String> amountTransferred = targetAccount.getTransactions().getAmountTransferred();
+            String originalMessage = targetAccount.getTransactions().getAmountTransferred().get(0);
+            targetAccount.getTransactions().getAmountTransferred().add(String.format("Amount transferred -> +%.2f %s", amountToDeposit, targetAccount.getCurrency()));
+            targetAccount.getTransactions().getAmountTransferred().remove(0);
+
+            amountTransferred.add(originalMessage);
+
+            targetAccount.getAccountTransactions().add(targetAccount.getTransactions());
+        }
 
         updateTransactions(sourceAccount, targetAccount, exchangeRate);
+    }
 
+    private void checkValidAccounts(BankAccount sourceAccount, BankAccount targetAccount, double amountToDeposit) {
+        if (!sourceAccount.getAccountType().equals("CurrentAccount") || !targetAccount.getAccountType().equals("CurrentAccount")) {
+            throw new IllegalArgumentException("Transfers are only allowed between two Current accounts.\n");
+        }
+
+        if (sourceAccount.getIban().equals(targetAccount.getIban())) {
+            throw new IllegalArgumentException("It is not allowed to transfer money to the same bank account.\n");
+        }
+
+        if (sourceAccount.getAvailableAmount() < amountToDeposit) {
+            throw new IllegalArgumentException("Not enough money in the source account.\n");
+        }
+
+        if (!getBankName().equals(sourceAccount.getBankInstitution().getBankName())) {
+            throw new IllegalArgumentException(String.format("Source account's bank is %s, not %s.\n", sourceAccount.getBankInstitution().getBankName(), getBankName()));
+        }
     }
 
     private double checkCurrenciesAndCalculateTheAmountToBeDeposited(double amountToDeposit, String sourceAccountCurrency, String targetAccountCurrency) {
@@ -169,6 +192,7 @@ public class BankInstitution {
         sourceAccount.getTransactions().setExchangeRate(exchangeRate);
         sourceAccount.getTransactions().setSourceBank(sourceAccount.getBankInstitution());
         sourceAccount.getTransactions().setTargetBank(targetAccount.getBankInstitution());
+
         sourceAccount.getTransactions().setSourceCurrency(sourceAccount.getCurrency());
         sourceAccount.getTransactions().setTargetCurrency(targetAccount.getCurrency());
         sourceAccount.getTransactions().setSourceIban(sourceAccount.getIban());
@@ -178,14 +202,15 @@ public class BankInstitution {
         targetAccount.getTransactions().setExchangeRate(exchangeRate);
         targetAccount.getTransactions().setSourceBank(sourceAccount.getBankInstitution());
         targetAccount.getTransactions().setTargetBank(targetAccount.getBankInstitution());
+
         targetAccount.getTransactions().setSourceCurrency(sourceAccount.getCurrency());
         targetAccount.getTransactions().setTargetCurrency(targetAccount.getCurrency());
         targetAccount.getTransactions().setSourceIban(sourceAccount.getIban());
         targetAccount.getTransactions().setTargetIban(targetAccount.getIban());
         targetAccount.getTransactions().setTimeStamp(Timestamp.valueOf(LocalDateTime.now()));
 
-        sourceAccount.getAccountTransactions().add(sourceAccount.getTransactions());
-        targetAccount.getAccountTransactions().add(targetAccount.getTransactions());
+//        sourceAccount.getAccountTransactions().add(sourceAccount.getTransactions());
+//        targetAccount.getAccountTransactions().add(targetAccount.getTransactions());
     }
 
     public String getBankName() {
@@ -202,7 +227,7 @@ public class BankInstitution {
 
     @Override
     public String toString() {
-        return "" + this.bankName+ " bank" + System.lineSeparator() +
+        return "" + this.bankName + " bank" + System.lineSeparator() +
                 "The address of the bank is: " + this.bankAddress + System.lineSeparator() +
                 "Number of customers of the bank: " + this.numberOfCustomers.size();
     }
