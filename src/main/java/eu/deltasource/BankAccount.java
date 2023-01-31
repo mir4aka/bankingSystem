@@ -4,34 +4,34 @@ import java.util.*;
 
 public class BankAccount {
     private Owner owner;
-    private BankInstitution bankInstitution;
-    private Transactions transactions;
-    private List<Transactions> accountTransactions = new LinkedList<>();
     private String iban;
     private String currency;
     private double availableAmount;
-    private final String accountType;
+    private BankInstitution bankInstitution;
+    private Transactions transactions;
+    private String accountType;
+    private List<Transactions> accountTransactions = new LinkedList<>();
 
-    public BankAccount(Owner owner, String ownerId, BankInstitution bankInstitution, String iban, String currency, double availableAmount, String accountType){
+    public BankAccount(Owner owner, String ownerId, BankInstitution bankInstitution, String iban, String currency, double availableAmount, String accountType) {
         this.owner = owner;
         this.owner.setId(ownerId);
         this.bankInstitution = bankInstitution;
         this.iban = iban;
         this.setCurrency(currency);
         this.availableAmount = availableAmount;
-        this.accountType = accountType;
         this.transactions = new Transactions();
 
         try {
             assignsAccountTypeToAccount(accountType);
             addsAccountToBank();
-        } catch (AlreadyExistingIdException e) {
+            setAccountType(accountType);
+        } catch (AlreadyExistingIdException | IllegalArgumentException | NullPointerException e) {
             System.out.println(e.getMessage());
         }
     }
 
     private void assignsAccountTypeToAccount(String accountType) {
-        if (this.owner.getAccountTypes().contains("CurrentAccount") && this.owner.getAccountTypes().contains("SavingsAccount")) {
+        if (owner.getAccountTypes().contains("CurrentAccount") && owner.getAccountTypes().contains("SavingsAccount")) {
             throw new AlreadyExistingIdException("You already have two accounts. (Current and Savings)\n");
         }
 
@@ -75,7 +75,7 @@ public class BankAccount {
 
         List<Transactions> accountTransactions = getAccountTransactions();
 
-        if(accountTransactions.isEmpty()) {
+        if (accountTransactions.isEmpty()) {
             message = "There are no transactions.\n";
             return message;
         }
@@ -86,8 +86,8 @@ public class BankAccount {
                         The iban is: %s
                         The bank is: %s
                         The currency is: %s
-                        """,owner.getFirstName() + " " + owner.getLastName() , getIban(),
-                getBankInstitution().getBankName(),
+                        """, owner.getFirstName() + " " + owner.getLastName(), getIban(),
+                owner.getBankInstitution().getBankName(),
                 getCurrency());
 
         return message;
@@ -131,7 +131,20 @@ public class BankAccount {
 
 
     public String getAccountType() {
+        if(accountType == null) {
+            return "";
+        }
         return accountType;
+    }
+
+    public void setAccountType(String accountType) {
+        if (accountType.equals("CurrentAccount")) {
+            this.accountType = accountType;
+        } else if (accountType.equals("SavingsAccount")) {
+            this.accountType = accountType;
+        } else {
+            throw new IllegalArgumentException("Account type can be either `Current` or `Savings` type of account.");
+        }
     }
 
     @Override

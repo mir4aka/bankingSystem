@@ -1,8 +1,10 @@
 package eu.deltasource;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -12,11 +14,11 @@ public class Transactions {
     private String targetIban;
     private BankInstitution sourceBank;
     private BankInstitution targetBank;
-    private List<String> amountTransferred = new ArrayList<>();
+    private double amountTransferred;
     private String sourceCurrency;
     private String targetCurrency;
     private double exchangeRate;
-    private Timestamp timeStamp;
+    private LocalDate timestamp;
 
     public void setSourceIban(String sourceIban) {
         this.sourceIban = sourceIban;
@@ -34,8 +36,12 @@ public class Transactions {
         this.targetBank = targetBank;
     }
 
-    public List<String> getAmountTransferred() {
+    public double getAmountTransferred() {
         return amountTransferred;
+    }
+
+    public void setAmountTransferred(double amountTransferred) {
+        this.amountTransferred = amountTransferred;
     }
 
     public void setSourceCurrency(String sourceCurrency) {
@@ -53,24 +59,20 @@ public class Transactions {
     }
 
 
-    public void setTimeStamp(Timestamp timeStamp) {
-        this.timeStamp = timeStamp;
+    public void setTimestamp(LocalDate timestamp) {
+        this.timestamp = timestamp;
     }
+
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        amountTransferred.forEach(t -> {
-            sb.append(t).append(System.lineSeparator());
-        });
-
         return  String.format("sourceIban = %s\n" +
                 "targetIban = %s\n" +
                 "sourceBank = %s\n" +
                 "targetBank = %s\n" +
-                "%s" +
+                "Transferred amount: %.2f\n" +
                 "sourceCurrency = %s\n" +
                 "targetCurrency = %s\n" +
                 "exchangeRate= %.2f\n" +
-                "timeStamp = %s\n", sourceIban, targetIban, sourceBank,targetBank, sb.toString(), sourceCurrency, targetCurrency, exchangeRate, timeStamp);
+                "timeStamp = %s\n", sourceIban, targetIban, sourceBank,targetBank, amountTransferred, sourceCurrency, targetCurrency, exchangeRate, timestamp);
     }
 }

@@ -13,7 +13,7 @@ class BankAccountTest {
 
     @Test
     public void testCurrencyShouldThrowIllegalArgumentException() throws IllegalArgumentException{
-        
+
     }
 
 }

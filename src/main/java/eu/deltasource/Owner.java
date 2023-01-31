@@ -8,6 +8,7 @@ public class Owner {
     private String lastName;
     private String id;
     private Set<String> accountTypes;
+    private BankInstitution bankInstitution;
 
     public Owner(String firstName, String lastName) {
         this.firstName = firstName;
@@ -41,6 +42,10 @@ public class Owner {
 
     public Set<String> getAccountTypes() {
         return accountTypes;
+    }
+
+    public BankInstitution getBankInstitution() {
+        return bankInstitution;
     }
 
     @Override
