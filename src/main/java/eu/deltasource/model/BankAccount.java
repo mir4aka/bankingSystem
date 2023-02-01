@@ -4,7 +4,9 @@ import eu.deltasource.AccountTypes;
 import eu.deltasource.exception.AlreadyExistingIdException;
 import eu.deltasource.exception.AccountTypeCannotBeDifferentFromCurrentAndSavingsException;
 import eu.deltasource.exception.InvalidCurrencyException;
+import eu.deltasource.exception.InvalidInputException;
 
+import java.time.LocalDate;
 import java.util.*;
 
 public class BankAccount {
@@ -12,7 +14,7 @@ public class BankAccount {
     private Owner owner;
     private String iban;
     private String currency;
-    private String accountType;
+    private List<AccountTypes> accountTypes;
     private double availableAmount;
     private BankInstitution bankInstitution;
     private Transactions transactions;
@@ -25,12 +27,13 @@ public class BankAccount {
         this.iban = iban;
         this.availableAmount = availableAmount;
         this.transactions = new Transactions();
+        this.accountTypes = new ArrayList<>();
 
         try {
             setAccountType(accountType);
             assignsAccountTypeToAccount(accountType);
             addsAccountToBank();
-            this.setCurrency(currency);
+            setCurrency(currency);
         } catch (AlreadyExistingIdException | IllegalArgumentException |
                  AccountTypeCannotBeDifferentFromCurrentAndSavingsException | InvalidCurrencyException e) {
             System.out.println(e.getMessage());
@@ -38,10 +41,14 @@ public class BankAccount {
     }
 
     private void assignsAccountTypeToAccount(String accountType) {
-        if (owner.getAccountTypes().contains(AccountTypes.CURRENT_ACCOUNT.getMessage()) && owner.getAccountTypes().contains(AccountTypes.SAVINGS_ACCOUNT.getMessage())) {
+        if (getAccountTypes().contains(AccountTypes.CURRENT_ACCOUNT) && getAccountTypes().contains(AccountTypes.SAVINGS_ACCOUNT)) {
             throw new AlreadyExistingIdException("You already have two accounts. (Current and Savings)\n");
         }
-        this.owner.assignAccounts(accountType);
+        assignAccounts(accountType);
+    }
+
+    private void assignAccounts(String accountType) {
+        accountTypes.add(AccountTypes.valueOf(accountType));
     }
 
     private void addsAccountToBank() {
@@ -68,10 +75,78 @@ public class BankAccount {
         for (int i = accountTransactions.size() - 1; i >= 0; i--) {
             Transactions currentTransaction = accountTransactions.get(i);
             transactions.append(String.format("Transaction #%d\n", numberOfTransactions++));
-            transactions.append(currentTransaction);
+            transactions.append(currentTransaction).append("---------------------------------").append(System.lineSeparator());
         }
 
         return transactions.toString();
+    }
+
+    public void prepareBankStatement(LocalDate start, LocalDate end) {
+        printAccountInformation(start, end);
+        for (Transactions transaction : getAccountTransactions()) {
+            LocalDate transactionDate = transaction.getTimestamp();
+            if (transactionDate.isAfter(start) && transactionDate.isBefore(end)) {
+                checkIfTheTransactionIsADepositWithdrawOrATransfer(transaction);
+            }
+        }
+    }
+
+    private void printAccountInformation(LocalDate start, LocalDate end) {
+        System.out.println("Bank statement for account with IBAN: " + getIban());
+        System.out.println("Account owner: \n" + getOwner());
+        System.out.println("Currency: " + getCurrency());
+        System.out.println("Start date: " + start);
+        System.out.println("End date: " + end + "\n");
+        System.out.println("Transactions: \n");
+    }
+
+    private void checkIfTheTransactionIsADepositWithdrawOrATransfer(Transactions transaction) {
+        if (transaction.getAmountTransferred() != 0) {
+            System.out.println("Source account: " + transaction.getSourceIban());
+            System.out.println("Amount transferred: " + transaction.getAmountTransferred());
+            System.out.println("Source currency: " + transaction.getSourceCurrency());
+            System.out.println("Exchange rate: " + transaction.getExchangeRate());
+            System.out.printf("Timestamp: %d-%d-%d\n", transaction.getTimestamp().getDayOfMonth(), transaction.getTimestamp().getMonthValue(), transaction.getTimestamp().getYear());
+            System.out.println("---------------------------------");
+            return;
+        } else if (transaction.getAmountDeposited() != 0) {
+            System.out.println("Source account: " + transaction.getSourceIban());
+            System.out.println("Amount Deposited: " + transaction.getAmountDeposited());
+            System.out.println("Source currency: " + transaction.getSourceCurrency());
+            System.out.println("Exchange rate: " + transaction.getExchangeRate());
+            System.out.printf("Timestamp: %d-%d-%d\n", transaction.getTimestamp().getDayOfMonth(), transaction.getTimestamp().getMonthValue(), transaction.getTimestamp().getYear());
+            System.out.println("---------------------------------");
+            return;
+        } else if (transaction.getAmountWithdrawn() != 0) {
+            System.out.println("Source account: " + transaction.getSourceIban());
+            System.out.println("Amount withdrawn: " + transaction.getAmountWithdrawn());
+            System.out.println("Source currency: " + transaction.getSourceCurrency());
+            System.out.println("Exchange rate: " + transaction.getExchangeRate());
+            System.out.printf("Timestamp: %d-%d-%d\n", transaction.getTimestamp().getDayOfMonth(), transaction.getTimestamp().getMonthValue(), transaction.getTimestamp().getYear());
+            System.out.println("---------------------------------");
+            return;
+        }
+        if (transaction.getTargetIban() == null && transaction.getTargetCurrency() == null) {
+            System.out.println("Source account: " + transaction.getSourceIban());
+            System.out.println("Amount transferred: " + transaction.getAmountTransferred());
+            System.out.println("Source currency: " + transaction.getSourceCurrency());
+            System.out.println("Exchange rate: " + transaction.getExchangeRate());
+            System.out.println("Timestamp: " + transaction.getTimestamp());
+            System.out.println("---------------------------------");
+            return;
+        }
+        System.out.println("Source account: " + transaction.getSourceIban());
+        System.out.println("Target account: " + transaction.getTargetIban());
+        System.out.println("Amount transferred: " + transaction.getAmountTransferred());
+        System.out.println("Source currency: " + transaction.getSourceCurrency());
+        System.out.println("Target currency: " + transaction.getTargetCurrency());
+        System.out.println("Exchange rate: " + transaction.getExchangeRate());
+        System.out.println("Timestamp: " + transaction.getTimestamp());
+        System.out.println("---------------------------------");
+    }
+
+    public Owner getOwner() {
+        return owner;
     }
 
     public BankInstitution getBankInstitution() {
@@ -86,7 +161,7 @@ public class BankAccount {
         return currency;
     }
 
-    public void setCurrency(String currency) {
+    private void setCurrency(String currency) {
         if (currency.equals("BGN") || currency.equals("USD") || currency.equals("GBP")) {
             this.currency = currency;
         } else {
@@ -110,18 +185,18 @@ public class BankAccount {
         accountTransactions.add(transaction);
     }
 
-    public String getAccountType() {
-        if (accountType == null) {
-            return "";
+    public List<AccountTypes> getAccountTypes() {
+        if (accountTypes.size() == 0) {
+            throw new InvalidInputException("No account types of this bank account.");
         }
-        return accountType;
+        return Collections.unmodifiableList(accountTypes);
     }
 
-    public void setAccountType(String accountType) {
-        if (accountType.equals("CurrentAccount")) {
-            this.accountType = accountType;
-        } else if (accountType.equals("SavingsAccount")) {
-            this.accountType = accountType;
+    private void setAccountType(String accountType) {
+        if (accountType.equals(AccountTypes.CURRENT_ACCOUNT.getMessage())) {
+            accountTypes.add(AccountTypes.CURRENT_ACCOUNT);
+        } else if (accountType.equals(AccountTypes.SAVINGS_ACCOUNT.getMessage())) {
+            accountTypes.add(AccountTypes.SAVINGS_ACCOUNT);
         } else {
             throw new AccountTypeCannotBeDifferentFromCurrentAndSavingsException("Account type can be either `Current` or `Savings` type of account.");
         }

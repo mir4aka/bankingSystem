@@ -1,5 +1,7 @@
 package eu.deltasource.model;
 
+import eu.deltasource.exception.InvalidInputException;
+
 import java.util.*;
 
 public class BankInstitution {
@@ -10,8 +12,12 @@ public class BankInstitution {
     private Map<String, Double> priceList;
 
     public BankInstitution(String bankName, String bankAddress) {
-        this.bankName = bankName;
-        this.bankAddress = bankAddress;
+        try {
+            setBankName(bankName);
+            setBankAddress(bankAddress);
+        } catch (InvalidInputException e) {
+            System.out.println(e.getMessage());
+        }
         this.numberOfCustomers = new HashMap<>();
         this.priceList = new HashMap<>();
         this.priceList.put("Tax to same bank", 0.02);
@@ -20,8 +26,25 @@ public class BankInstitution {
         this.priceList.put("Exchange to different currency", 1.15);
     }
 
+    public BankInstitution() {
+    }
+
     public String getBankName() {
         return bankName;
+    }
+
+    public void setBankName(String bankName) {
+        if(bankName.isBlank()) {
+            throw new InvalidInputException("Bank name cannot be blank.");
+        }
+        this.bankName = bankName;
+    }
+
+    public void setBankAddress(String bankAddress) {
+        if(bankAddress.isBlank()) {
+            throw new InvalidInputException("Bank address cannot be blank.");
+        }
+        this.bankAddress = bankAddress;
     }
 
     public Map<String, Double> getPriceList() {

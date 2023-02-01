@@ -27,21 +27,23 @@ public class RunApplication {
 //            raifaizen.withdrawMoneyFromAccount(mirkic, 10, LocalDate.of(2022, 2, 1));
 //            dsk.depositMoneyToAccount(nikic, 500, LocalDate.of(2023, 2, 1));
 //            dsk.transferMoney(nikic, mirkic, 10, LocalDate.of(2023, 2, 1));
-            bankService.depositMoneyToAccount(nikic, 2, LocalDate.of(2003, 2,1));
-            bankService.withdrawMoneyFromAccount(mirkic, 10, LocalDate.of(2003, 2,1));
-            bankService.transferMoney(nikic, mirkic, 10, LocalDate.of(2023, 2,1));
+            bankService.depositMoneyToAccount(mirkic, 2, LocalDate.of(2003, 2,1));
+            bankService.withdrawMoneyFromAccount(mirkic, 10, LocalDate.of(2003, 3,1));
+//            bankService.transferMoney(nikic, mirkic, 10, LocalDate.of(2023, 2,1));
 
         } catch (TransfersAllowedBetweenCurrentAccountsException | InvalidCurrencyException |
                  NotAllowedToTransferToTheSameBankAccountException e) {
             System.out.println(e.getMessage());
         }
 
-        System.out.println(nikic.allTransactions());
-        System.out.println(nikic);
+//        System.out.println(nikic);
+//
+//
+//        System.out.println(mirkic.allTransactions());
+//        System.out.println(mirkic);
 
-
+        mirkic.prepareBankStatement(LocalDate.of(2002,2,1), LocalDate.of(2004,3,1));
         System.out.println(mirkic.allTransactions());
-        System.out.println(mirkic);
 
     }
 }
