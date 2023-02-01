@@ -1,9 +1,10 @@
-package eu.deltasource;
+package eu.deltasource.model;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class Owner {
+
     private String firstName;
     private String lastName;
     private String id;
@@ -13,10 +14,6 @@ public class Owner {
         this.firstName = firstName;
         this.lastName = lastName;
         this.accountTypes = new HashSet<>(2);
-    }
-
-    public Owner() {
-
     }
 
     public void assignAccounts(String type) {

@@ -1,4 +1,4 @@
-package eu.deltasource;
+package eu.deltasource.model;
 
 import java.time.LocalDate;
 

@@ -1,6 +1,8 @@
 package eu.deltasource;
 
-import eu.deltasource.exceptions.*;
+import eu.deltasource.exception.*;
+import eu.deltasource.model.BankAccount;
+import eu.deltasource.model.Transactions;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -27,7 +29,10 @@ public class BankService {
     }
 
     public void transferMoney(BankAccount sourceAccount, BankAccount targetAccount, double amountToTransfer, LocalDate date) {
+        transfer(sourceAccount, targetAccount, amountToTransfer, date);
+    }
 
+    private void transfer(BankAccount sourceAccount, BankAccount targetAccount, double amountToTransfer, LocalDate date) {
         checkValidAccounts(sourceAccount, targetAccount, amountToTransfer);
 
         double fees = calculateFees(sourceAccount, targetAccount);
@@ -103,9 +108,9 @@ public class BankService {
     private void checkIfSourceAccountHasEnoughMoneyToTransfer(BankAccount sourceAccount, double amountToTransfer, double moneyInSourceAccount) {
         if (moneyInSourceAccount < amountToTransfer) {
             double negativeBalance = moneyInSourceAccount - amountToTransfer;
+
             String message = String.format("You don't have enough money for that kind of transaction, " +
                     " otherwise the result of your balance would be %.2f %s\n", negativeBalance, sourceAccount.getCurrency());
-
             throw new NotEnoughMoneyToTransferException(message);
         }
     }
@@ -118,7 +123,7 @@ public class BankService {
             Transactions sourceAccountTransaction = updateSourceAccountTransactions(sourceAccount, targetAccount, amountToBeWithdrawnFromSourceAccount, exchangeRate, date);
             sourceAccount.addTransaction(sourceAccountTransaction);
         } else {
-            Transactions newTransaction =  updateSourceAccountTransactions(sourceAccount, targetAccount, amountToBeWithdrawnFromSourceAccount, exchangeRate, date);
+            Transactions newTransaction = updateSourceAccountTransactions(sourceAccount, targetAccount, amountToBeWithdrawnFromSourceAccount, exchangeRate, date);
             sourceAccount.addTransaction(newTransaction);
         }
 

@@ -1,11 +1,14 @@
-package eu.deltasource;
+package eu.deltasource.model;
 
-import eu.deltasource.exceptions.AccountTypeCannotBeDifferentFromCurrentAndSavingsException;
-import eu.deltasource.exceptions.InvalidCurrencyException;
+import eu.deltasource.AccountTypes;
+import eu.deltasource.exception.AlreadyExistingIdException;
+import eu.deltasource.exception.AccountTypeCannotBeDifferentFromCurrentAndSavingsException;
+import eu.deltasource.exception.InvalidCurrencyException;
 
 import java.util.*;
 
 public class BankAccount {
+
     private Owner owner;
     private String iban;
     private String currency;
@@ -38,7 +41,6 @@ public class BankAccount {
         if (owner.getAccountTypes().contains(AccountTypes.CURRENT_ACCOUNT.getMessage()) && owner.getAccountTypes().contains(AccountTypes.SAVINGS_ACCOUNT.getMessage())) {
             throw new AlreadyExistingIdException("You already have two accounts. (Current and Savings)\n");
         }
-
         this.owner.assignAccounts(accountType);
     }
 
@@ -48,30 +50,28 @@ public class BankAccount {
         if (numberOfCustomers.containsKey(owner.getId())) {
             throw new AlreadyExistingIdException("A person with that id already has an account in this bank.\n");
         }
-
         numberOfCustomers.putIfAbsent(owner.getId(), 1);
     }
 
     public String allTransactions() {
-        StringBuilder sb = new StringBuilder();
-
+        StringBuilder transactions = new StringBuilder();
         List<Transactions> accountTransactions = getAccountTransactions();
 
         if (accountTransactions.isEmpty()) {
-            sb.append("There are no transactions for the account of ").append(owner.getFirstName()).append(" ").append(owner.getLastName()).append(System.lineSeparator());
-            return sb.toString();
+            transactions.append("There are no transactions for the account of ").append(owner.getFirstName()).append(" ").append(owner.getLastName()).append(System.lineSeparator());
+            return transactions.toString();
         }
 
-        sb.append("Transactions of account ").append(owner.getFirstName()).append(" ").append(owner.getLastName()).append(": ").append(System.lineSeparator());
+        transactions.append("Transactions of account ").append(owner.getFirstName()).append(" ").append(owner.getLastName()).append(": ").append(System.lineSeparator());
 
         int numberOfTransactions = 1;
         for (int i = accountTransactions.size() - 1; i >= 0; i--) {
             Transactions currentTransaction = accountTransactions.get(i);
-            sb.append(String.format("Transaction #%d\n", numberOfTransactions++));
-            sb.append(currentTransaction);
+            transactions.append(String.format("Transaction #%d\n", numberOfTransactions++));
+            transactions.append(currentTransaction);
         }
 
-        return sb.toString();
+        return transactions.toString();
     }
 
     public BankInstitution getBankInstitution() {
@@ -109,7 +109,6 @@ public class BankAccount {
     public void addTransaction(Transactions transaction) {
         accountTransactions.add(transaction);
     }
-
 
     public String getAccountType() {
         if (accountType == null) {

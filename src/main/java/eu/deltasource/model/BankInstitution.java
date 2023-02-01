@@ -1,11 +1,9 @@
-package eu.deltasource;
+package eu.deltasource.model;
 
-import eu.deltasource.exceptions.*;
-
-import java.time.LocalDate;
 import java.util.*;
 
 public class BankInstitution {
+
     private String bankName;
     private String bankAddress;
     private Map<String, Integer> numberOfCustomers;

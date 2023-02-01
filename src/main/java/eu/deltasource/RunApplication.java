@@ -1,8 +1,11 @@
 package eu.deltasource;
 
-import eu.deltasource.exceptions.InvalidCurrencyException;
-import eu.deltasource.exceptions.NotAllowedToTransferToTheSameBankAccountException;
-import eu.deltasource.exceptions.TransfersAllowedBetweenCurrentAccountsException;
+import eu.deltasource.exception.InvalidCurrencyException;
+import eu.deltasource.exception.NotAllowedToTransferToTheSameBankAccountException;
+import eu.deltasource.exception.TransfersAllowedBetweenCurrentAccountsException;
+import eu.deltasource.model.BankAccount;
+import eu.deltasource.model.BankInstitution;
+import eu.deltasource.model.Owner;
 
 import java.time.LocalDate;
 

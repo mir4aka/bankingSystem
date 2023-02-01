@@ -1,9 +1,9 @@
 package eu.deltasource;
 
-import org.junit.jupiter.api.Assertions;
+import eu.deltasource.model.BankAccount;
+import eu.deltasource.model.BankInstitution;
+import eu.deltasource.model.Owner;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class BankAccountTest {
 

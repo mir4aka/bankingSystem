@@ -4,7 +4,7 @@ public enum AccountTypes {
 
     CURRENT_ACCOUNT("CurrentAccount"),
     SAVINGS_ACCOUNT("SavingsAccount");
-    private String message;
+    private final String message;
     AccountTypes(String message) {
         this.message = message;
     }
