@@ -21,10 +21,6 @@ public class Transactions {
         this.sourceIban = sourceIban;
     }
 
-    public BankInstitution getTargetBank() {
-        return targetBank;
-    }
-
     public void setTargetIban(String targetIban) {
         this.targetIban = targetIban;
     }
@@ -53,16 +49,13 @@ public class Transactions {
         this.sourceCurrency = sourceCurrency;
     }
 
-
     public void setTargetCurrency(String targetCurrency) {
         this.targetCurrency = targetCurrency;
     }
 
-
     public void setExchangeRate(double exchangeRate) {
         this.exchangeRate = exchangeRate;
     }
-
 
     public void setTimestamp(LocalDate timestamp) {
         this.timestamp = timestamp;
@@ -72,28 +65,37 @@ public class Transactions {
         return targetBank == null && targetCurrency == null && targetIban == null;
     }
 
+    private String checkValuesOfTheTransactionObject() {
+        if (checkIfEmptyValuesExistInTheTransaction()) {
+            return String.format("""
+                    Source Iban: %s
+                    Bank: %s
+                    Transferred amount: %.2f
+                    Deposited amount: %.2f
+                    Withdrawn amount: %.2f
+                    Currency: %s
+                    ExchangeRate: %.2f
+                    timestamp: %s
+                    """, sourceIban, sourceBank, amountTransferred, amountDeposited, amountWithdrawn, sourceCurrency, exchangeRate, timestamp);
+        }
+        return String.format("""
+                Source Iban = %s
+                Target Iban: %s
+                Source Bank: %s
+                Target Bank: %s
+                Transferred amount: %.2f
+                Deposited amount: %.2f
+                Withdrawn amount: %.2f
+                Source Currency: %s
+                Target Currency: %s
+                ExchangeRate: %.2f
+                timestamp: %s
+                >------------------------------<
+                """, sourceIban, targetIban, sourceBank, targetBank, amountTransferred, amountDeposited, amountWithdrawn, sourceCurrency, targetCurrency, exchangeRate, timestamp);
+    }
+
     @Override
     public String toString() {
-        if(checkIfEmptyValuesExistInTheTransaction()) {
-           return String.format("Source Iban: %s\n" +
-                    "Bank: %s\n" +
-                    "Transferred amount: %.2f\n" +
-                    "Deposited amount: %.2f\n" +
-                    "Withdrawn amount: %.2f\n" +
-                    "Currency: %s\n" +
-                    "ExchangeRate: %.2f\n" +
-                    "timestamp: %s\n", sourceIban, sourceBank, amountTransferred, amountDeposited, amountWithdrawn, sourceCurrency, exchangeRate, timestamp);
-        }
-        return String.format("Source Iban = %s\n" +
-                "Target Iban: %s\n" +
-                "Source Bank: %s\n" +
-                "Target Bank: %s\n" +
-                "Transferred amount: %.2f\n" +
-                "Deposited amount: %.2f\n" +
-                "Withdrawn amount: %.2f\n" +
-                "Source Currency: %s\n" +
-                "Target Currency: %s\n" +
-                "ExchangeRate: %.2f\n" +
-                "timestamp: %s\n", sourceIban, targetIban, sourceBank, targetBank, amountTransferred, amountDeposited, amountWithdrawn, sourceCurrency, targetCurrency, exchangeRate, timestamp);
+        return checkValuesOfTheTransactionObject();
     }
 }
