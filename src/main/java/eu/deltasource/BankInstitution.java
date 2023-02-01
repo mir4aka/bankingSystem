@@ -1,8 +1,6 @@
 package eu.deltasource;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 
 public class BankInstitution {
@@ -22,7 +20,7 @@ public class BankInstitution {
         this.priceList.put("Exchange to different currency", 1.15);
     }
 
-    public void withdrawMoneyFromAccount(BankAccount account, double amountToWithdraw) {
+    public void withdrawMoneyFromAccount(BankAccount account, double amountToWithdraw, LocalDate date) {
         double moneyAvailable = account.getAvailableAmount();
 
         if (moneyAvailable < amountToWithdraw) {
@@ -40,14 +38,11 @@ public class BankInstitution {
 
         account.setAvailableAmount(moneyAvailable);
 
-        String amountTransferred = (String.format("Withdrawn money -> -%.2f %s", amountToWithdraw, account.getCurrency()));
-
-        account.getTransactions().setAmountTransferred(amountToWithdraw);
-
-        account.getAccountTransactions().add(account.getTransactions());
+        Transactions transaction = updateWithdrawTransaction(account, amountToWithdraw, date);
+        account.addTransaction(transaction);
     }
 
-    public void depositMoneyToAccount(BankAccount account, double amountToDeposit) {
+    public void depositMoneyToAccount(BankAccount account, double amountToDeposit, LocalDate date) {
         double moneyAvailable = account.getAvailableAmount();
 
         if (!getBankName().equals(account.getBankInstitution().getBankName())) {
@@ -62,9 +57,9 @@ public class BankInstitution {
 
         account.setAvailableAmount(moneyAvailable);
 
-        String amountTransferred = (String.format("Deposited money -> +%.2f %s", amountToDeposit, account.getCurrency()));
+        Transactions transaction = updateDepositTransaction(account, amountToDeposit, date);
 
-        account.getTransactions().setAmountTransferred(amountToDeposit);
+        account.addTransaction(transaction);
     }
 
     public void transferMoney(BankAccount sourceAccount, BankAccount targetAccount, double amountToDeposit, LocalDate date) {
@@ -109,7 +104,7 @@ public class BankInstitution {
 
         moneyInSourceAccount -= amountWithTaxes;
 
-        double allTAxes = amountWithTaxes - amountToDeposit;
+//        double allTAxes = amountWithTaxes - amountToDeposit;
 
         sourceAccount.setAvailableAmount(moneyInSourceAccount);
 
@@ -119,32 +114,23 @@ public class BankInstitution {
         List<Transactions> targetAccountTransactions = targetAccount.getAccountTransactions();
 
         if (sourceAccountTransactions.isEmpty()) {
-            Transactions sourceAccountTransaction = sourceAccount.getTransactions();
-            sourceAccountTransaction.setAmountTransferred(amountWithTaxes);
-            sourceAccountTransactions.add(sourceAccountTransaction);
+            Transactions sourceAccountTransaction = updateSourceAccountTransaction(sourceAccount, targetAccount, amountWithTaxes, exchangeRate, date);
+
+            sourceAccount.addTransaction(sourceAccountTransaction);
         } else {
-            Transactions transaction = updateTransactions(sourceAccount, targetAccount, exchangeRate, date);
-            transaction.setAmountTransferred(amountWithTaxes);
-
-            sourceAccount.getAccountTransactions().add(transaction);
-
-            sourceAccount.getTransactions().setAmountTransferred(amountWithTaxes);
-
-//            sourceAccount.getAccountTransactions().add(sourceAccount.getTransactions());
+            Transactions transaction =  updateSourceAccountTransaction(sourceAccount, targetAccount, amountWithTaxes, exchangeRate, date);
+            sourceAccount.addTransaction(transaction);
         }
 
         if (targetAccountTransactions.isEmpty()) {
-            Transactions targetAccountTransactions1 = targetAccount.getTransactions();
-            targetAccount.getTransactions().setAmountTransferred(originalAmount);
-            targetAccountTransactions.add(targetAccountTransactions1);
+            Transactions targetAccountTransactions1 = updateTargetAccountTransactions(sourceAccount, targetAccount, originalAmount, exchangeRate, date);
 
+            targetAccount.addTransaction(targetAccountTransactions1);
         } else {
-            targetAccount.getTransactions().setAmountTransferred(originalAmount);
-
-            targetAccount.getAccountTransactions().add(targetAccount.getTransactions());
+            Transactions transaction = updateTargetAccountTransactions(sourceAccount, targetAccount, originalAmount, exchangeRate, date);
+            targetAccount.addTransaction(transaction);
         }
 
-        updateTransactions(sourceAccount, targetAccount, exchangeRate, date);
     }
 
     private void checkValidAccounts(BankAccount sourceAccount, BankAccount targetAccount, double amountToDeposit) {
@@ -188,48 +174,59 @@ public class BankInstitution {
         return amountToDeposit;
     }
 
-    private Transactions updateTransactions(BankAccount sourceAccount, BankAccount targetAccount, double exchangeRate, LocalDate date) {
+    private Transactions updateSourceAccountTransaction(BankAccount sourceAccount, BankAccount targetAccount, double amount, double exchangeRate, LocalDate date) {
+        Transactions transaction = new Transactions();
+        transaction.setExchangeRate(exchangeRate);
+        transaction.setSourceBank(sourceAccount.getBankInstitution());
+        transaction.setTargetBank(targetAccount.getBankInstitution());
+        transaction.setAmountTransferred(amount);
+
+        transaction.setSourceCurrency(sourceAccount.getCurrency());
+        transaction.setTargetCurrency(targetAccount.getCurrency());
+        transaction.setSourceIban(sourceAccount.getIban());
+        transaction.setTargetIban(targetAccount.getIban());
+
+        transaction.setTimestamp(date);
+        return transaction;
+    }
+
+    private Transactions updateTargetAccountTransactions(BankAccount sourceAccount, BankAccount targetAccount, double amount, double exchangeRate, LocalDate date) {
+        Transactions transaction = new Transactions();
+        transaction.setExchangeRate(exchangeRate);
+        transaction.setSourceBank(sourceAccount.getBankInstitution());
+        transaction.setTargetBank(targetAccount.getBankInstitution());
+        transaction.setAmountTransferred(amount);
+
+        transaction.setSourceCurrency(sourceAccount.getCurrency());
+        transaction.setTargetCurrency(targetAccount.getCurrency());
+        transaction.setSourceIban(sourceAccount.getIban());
+        transaction.setTargetIban(targetAccount.getIban());
+
+        transaction.setTimestamp(date);
+        return transaction;
+    }
+
+    private Transactions updateDepositTransaction(BankAccount account, double amount, LocalDate date) {
         Transactions transaction = new Transactions();
 
-        transaction.setExchangeRate(exchangeRate);
-        transaction.setSourceBank(sourceAccount.getBankInstitution());
-        transaction.setTargetBank(targetAccount.getBankInstitution());
-        transaction.setSourceCurrency(sourceAccount.getCurrency());
-        transaction.setTargetCurrency(targetAccount.getCurrency());
-        transaction.setSourceIban(sourceAccount.getIban());
-        transaction.setTargetIban(targetAccount.getIban());
-        transaction.setTimestamp(date);
-        transaction.setExchangeRate(exchangeRate);
-        transaction.setSourceBank(sourceAccount.getBankInstitution());
-        transaction.setTargetBank(targetAccount.getBankInstitution());
-        transaction.setSourceCurrency(sourceAccount.getCurrency());
-        transaction.setTargetCurrency(targetAccount.getCurrency());
-        transaction.setSourceIban(sourceAccount.getIban());
-        transaction.setTargetIban(targetAccount.getIban());
+        transaction.setSourceBank(account.getBankInstitution());
+        transaction.setAmountDeposited(amount);
+        transaction.setSourceCurrency(account.getCurrency());
+        transaction.setSourceIban(account.getIban());
         transaction.setTimestamp(date);
 
-//        sourceAccount.getTransactions().setExchangeRate(exchangeRate);
-//        sourceAccount.getTransactions().setSourceBank(sourceAccount.getBankInstitution());
-//        sourceAccount.getTransactions().setTargetBank(targetAccount.getBankInstitution());
-//
-//
-//        sourceAccount.getTransactions().setSourceCurrency(sourceAccount.getCurrency());
-//        sourceAccount.getTransactions().setTargetCurrency(targetAccount.getCurrency());
-//        sourceAccount.getTransactions().setSourceIban(sourceAccount.getIban());
-//        sourceAccount.getTransactions().setTargetIban(targetAccount.getIban());
-//
-//        sourceAccount.getTransactions().setTimestamp(date);
-//
-//        targetAccount.getTransactions().setExchangeRate(exchangeRate);
-//        targetAccount.getTransactions().setSourceBank(sourceAccount.getBankInstitution());
-//        targetAccount.getTransactions().setTargetBank(targetAccount.getBankInstitution());
-//
-//        targetAccount.getTransactions().setSourceCurrency(sourceAccount.getCurrency());
-//        targetAccount.getTransactions().setTargetCurrency(targetAccount.getCurrency());
-//        targetAccount.getTransactions().setSourceIban(sourceAccount.getIban());
-//        targetAccount.getTransactions().setTargetIban(targetAccount.getIban());
-//
-//        targetAccount.getTransactions().setTimestamp(date);
+        return transaction;
+    }
+
+    private Transactions updateWithdrawTransaction(BankAccount account, double amount, LocalDate date) {
+        Transactions transaction = new Transactions();
+
+        transaction.setSourceBank(account.getBankInstitution());
+        transaction.setAmountWithdrawn(amount);
+        transaction.setSourceCurrency(account.getCurrency());
+        transaction.setSourceIban(account.getIban());
+        transaction.setTimestamp(date);
+
         return transaction;
     }
 

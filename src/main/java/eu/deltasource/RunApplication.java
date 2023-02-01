@@ -16,20 +16,24 @@ public class RunApplication {
         BankAccount mirkic = new BankAccount(mirki4, "023", raifaizen, "frew", "USD", 30, "CurrentAccount");
 
         try {
-            dsk.transferMoney(nikic, mirkic, 10, LocalDate.of(2000, 10, 20));
-            raifaizen.transferMoney(mirkic, nikic, 12, LocalDate.of(2005, 1, 1));
-            dsk.transferMoney(nikic, mirkic, 4, LocalDate.of(1224, 11, 22));
+//            dsk.transferMoney(nikic, mirkic, 10, LocalDate.of(2000, 10, 20));
+//            raifaizen.transferMoney(mirkic, nikic, 12, LocalDate.of(2005, 1, 1));
+//            dsk.transferMoney(nikic, mirkic, 4, LocalDate.of(1224, 11, 22));
 //            dsk.transferMoney(nikic, mirkic, 107);
 //            dsk.transferMoney(nikic, mirkic, 10);
 //            dsk.transferMoney(nikic, mirkic, 130);
 //            dsk.transferMoney(nikic, mirkic, 20);
+
+            raifaizen.withdrawMoneyFromAccount(mirkic, 10, LocalDate.of(2022, 2, 1));
+            dsk.depositMoneyToAccount(nikic, 500, LocalDate.of(2023, 2,1));
+            dsk.transferMoney(nikic, mirkic, 10, LocalDate.of(2023, 2,1));
 
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
         }
 
         System.out.println(nikic.allTransactions());
-//        System.out.println(mirkic.allTransactions());
+        System.out.println(mirkic.allTransactions());
 
 
     }

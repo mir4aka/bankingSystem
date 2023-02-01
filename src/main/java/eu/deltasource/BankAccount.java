@@ -93,6 +93,10 @@ public class BankAccount {
         return message;
     }
 
+    private boolean checkIfAValueIsNull(Transactions accountTransaction) {
+       return accountTransaction.getTargetBank() == null;
+    }
+
     public BankInstitution getBankInstitution() {
         return bankInstitution;
     }
@@ -126,7 +130,11 @@ public class BankAccount {
     }
 
     public List<Transactions> getAccountTransactions() {
-        return accountTransactions;
+        return Collections.unmodifiableList(accountTransactions);
+    }
+
+    public void addTransaction(Transactions transaction) {
+        accountTransactions.add(transaction);
     }
 
 
