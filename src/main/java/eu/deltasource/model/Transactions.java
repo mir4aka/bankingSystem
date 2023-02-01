@@ -126,7 +126,6 @@ public class Transactions {
                 Target currency: %s
                 Exchange rate: %.2f
                 Time of transaction: %s
-                >------------------------------<
                 """, sourceIban, targetIban, sourceBank, targetBank, amountTransferred, amountDeposited, amountWithdrawn, sourceCurrency, targetCurrency, exchangeRate, timestamp);
     }
 

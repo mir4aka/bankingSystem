@@ -64,7 +64,7 @@ public class BankService {
     private double increaseTheAmountOfMoneyInTheAccount(BankAccount account, double amountToDeposit) {
         double moneyAvailable = account.getAvailableAmount();
 
-        if (account.getAccountType().equals(AccountTypes.CURRENT_ACCOUNT.getMessage()) || account.getAccountType().equals(AccountTypes.SAVINGS_ACCOUNT.getMessage())) {
+        if (account.getAccountTypes().contains(AccountTypes.CURRENT_ACCOUNT) || account.getAccountTypes().contains(AccountTypes.SAVINGS_ACCOUNT)) {
             moneyAvailable += amountToDeposit;
         }
         return moneyAvailable;
@@ -77,7 +77,7 @@ public class BankService {
             throw new NotEnoughMoneyToWithdrawException("Not enough money to withdraw.");
         }
 
-        if (account.getAccountType().equals("CurrentAccount") || account.getAccountType().equals("SavingsAccount")) {
+        if (account.getAccountTypes().contains(AccountTypes.CURRENT_ACCOUNT) || account.getAccountTypes().contains(AccountTypes.SAVINGS_ACCOUNT)) {
             moneyAvailable -= amountToWithdraw;
         }
         return moneyAvailable;
@@ -193,7 +193,7 @@ public class BankService {
     }
 
     private void checkValidAccounts(BankAccount sourceAccount, BankAccount targetAccount, double amountToDeposit) {
-        if (!sourceAccount.getAccountType().equals("CurrentAccount") || !targetAccount.getAccountType().equals("CurrentAccount")) {
+        if (!sourceAccount.getAccountTypes().contains(AccountTypes.CURRENT_ACCOUNT) || !targetAccount.getAccountTypes().contains(AccountTypes.CURRENT_ACCOUNT)) {
             throw new TransfersAllowedBetweenCurrentAccountsException("Transfers are only allowed between two Current accounts.\n");
         }
 

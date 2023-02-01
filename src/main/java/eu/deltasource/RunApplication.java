@@ -29,7 +29,7 @@ public class RunApplication {
 //            dsk.transferMoney(nikic, mirkic, 10, LocalDate.of(2023, 2, 1));
             bankService.depositMoneyToAccount(mirkic, 2, LocalDate.of(2003, 2,1));
             bankService.withdrawMoneyFromAccount(mirkic, 10, LocalDate.of(2003, 3,1));
-//            bankService.transferMoney(nikic, mirkic, 10, LocalDate.of(2023, 2,1));
+            bankService.transferMoney(nikic, mirkic, 10, LocalDate.of(2023, 2,1));
 
         } catch (TransfersAllowedBetweenCurrentAccountsException | InvalidCurrencyException |
                  NotAllowedToTransferToTheSameBankAccountException e) {
@@ -43,6 +43,8 @@ public class RunApplication {
 //        System.out.println(mirkic);
 
         mirkic.prepareBankStatement(LocalDate.of(2002,2,1), LocalDate.of(2004,3,1));
+        nikic.prepareBankStatement(LocalDate.of(2002,2,1), LocalDate.of(2004,3,1));
+        System.out.println(nikic.allTransactions());
         System.out.println(mirkic.allTransactions());
 
     }

@@ -31,7 +31,7 @@ public class BankAccount {
 
         try {
             setAccountType(accountType);
-            assignsAccountTypeToAccount(accountType);
+//            assignsAccountTypeToAccount(accountType);
             addsAccountToBank();
             setCurrency(currency);
         } catch (AlreadyExistingIdException | IllegalArgumentException |
@@ -87,43 +87,61 @@ public class BankAccount {
             LocalDate transactionDate = transaction.getTimestamp();
             if (transactionDate.isAfter(start) && transactionDate.isBefore(end)) {
                 checkIfTheTransactionIsADepositWithdrawOrATransfer(transaction);
+            } else {
+                System.out.println("------");
+                System.out.println("No transactions for the account of " + owner.getFirstName() + " " + owner.getLastName() + " for the given period of time.");
+                System.out.println("------");
             }
         }
     }
 
     private void printAccountInformation(LocalDate start, LocalDate end) {
+        int startDayOfMonth = start.getDayOfMonth();
+        int startMonthValue = start.getMonthValue();
+        int startYear = start.getYear();
+
+        int endDayOfMonth = end.getDayOfMonth();
+        int endMonthValue = end.getMonthValue();
+        int endYear = end.getYear();
+
+        System.out.println("---------------------------------");
         System.out.println("Bank statement for account with IBAN: " + getIban());
         System.out.println("Account owner: \n" + getOwner());
         System.out.println("Currency: " + getCurrency());
-        System.out.println("Start date: " + start);
-        System.out.println("End date: " + end + "\n");
-        System.out.println("Transactions: \n");
+        System.out.printf("Start date: %d-%d-%d\n", startDayOfMonth, startMonthValue, startYear);
+        System.out.printf("End date: %d-%d-%d\n", endDayOfMonth, endMonthValue, endYear);
+        System.out.println("---------------------------------");
+        System.out.println("Transactions:");
     }
 
     private void checkIfTheTransactionIsADepositWithdrawOrATransfer(Transactions transaction) {
+        int dayOfMonth = transaction.getTimestamp().getDayOfMonth();
+        int month = transaction.getTimestamp().getMonthValue();
+        int year = transaction.getTimestamp().getYear();
+
         if (transaction.getAmountTransferred() != 0) {
             System.out.println("Source account: " + transaction.getSourceIban());
             System.out.println("Amount transferred: " + transaction.getAmountTransferred());
             System.out.println("Source currency: " + transaction.getSourceCurrency());
             System.out.println("Exchange rate: " + transaction.getExchangeRate());
-            System.out.printf("Timestamp: %d-%d-%d\n", transaction.getTimestamp().getDayOfMonth(), transaction.getTimestamp().getMonthValue(), transaction.getTimestamp().getYear());
-            System.out.println("---------------------------------");
+            System.out.printf("Timestamp: %d-%d-%d\n", dayOfMonth, month, year);
+            System.out.println("----------------<");
             return;
         } else if (transaction.getAmountDeposited() != 0) {
             System.out.println("Source account: " + transaction.getSourceIban());
             System.out.println("Amount Deposited: " + transaction.getAmountDeposited());
             System.out.println("Source currency: " + transaction.getSourceCurrency());
             System.out.println("Exchange rate: " + transaction.getExchangeRate());
-            System.out.printf("Timestamp: %d-%d-%d\n", transaction.getTimestamp().getDayOfMonth(), transaction.getTimestamp().getMonthValue(), transaction.getTimestamp().getYear());
-            System.out.println("---------------------------------");
+            System.out.printf("Timestamp: %d-%d-%d\n", dayOfMonth, month, year);
+            System.out.println("----------------<");
             return;
         } else if (transaction.getAmountWithdrawn() != 0) {
             System.out.println("Source account: " + transaction.getSourceIban());
             System.out.println("Amount withdrawn: " + transaction.getAmountWithdrawn());
             System.out.println("Source currency: " + transaction.getSourceCurrency());
             System.out.println("Exchange rate: " + transaction.getExchangeRate());
-            System.out.printf("Timestamp: %d-%d-%d\n", transaction.getTimestamp().getDayOfMonth(), transaction.getTimestamp().getMonthValue(), transaction.getTimestamp().getYear());
-            System.out.println("---------------------------------");
+            System.out.printf("Timestamp: %d-%d-%d\n", dayOfMonth, month, year);
+            System.out.println("----------------<");
             return;
         }
         if (transaction.getTargetIban() == null && transaction.getTargetCurrency() == null) {
@@ -131,8 +149,8 @@ public class BankAccount {
             System.out.println("Amount transferred: " + transaction.getAmountTransferred());
             System.out.println("Source currency: " + transaction.getSourceCurrency());
             System.out.println("Exchange rate: " + transaction.getExchangeRate());
-            System.out.println("Timestamp: " + transaction.getTimestamp());
-            System.out.println("---------------------------------");
+            System.out.printf("Timestamp: %d-%d-%d\n", dayOfMonth, month, year);
+            System.out.println("----------------<");
             return;
         }
         System.out.println("Source account: " + transaction.getSourceIban());
@@ -141,8 +159,8 @@ public class BankAccount {
         System.out.println("Source currency: " + transaction.getSourceCurrency());
         System.out.println("Target currency: " + transaction.getTargetCurrency());
         System.out.println("Exchange rate: " + transaction.getExchangeRate());
-        System.out.println("Timestamp: " + transaction.getTimestamp());
-        System.out.println("---------------------------------");
+        System.out.printf("Timestamp: %d-%d-%d", dayOfMonth, month, year);
+        System.out.println("----------------<");
     }
 
     public Owner getOwner() {

@@ -65,6 +65,6 @@ public class Owner {
 //        String types = String.join(", ", this.accountTypes);
         return "FirstName = " + this.firstName + '\n' +
                 "LastName = " + this.lastName + '\n' +
-                "Id = " + this.id + '\n';
+                "Id = " + this.id;
     }
 }
