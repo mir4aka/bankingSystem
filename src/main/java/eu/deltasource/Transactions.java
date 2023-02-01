@@ -37,24 +37,12 @@ public class Transactions {
         this.targetBank = targetBank;
     }
 
-    public double getAmountTransferred() {
-        return amountTransferred;
-    }
-
     public void setAmountTransferred(double amountTransferred) {
         this.amountTransferred = amountTransferred;
     }
 
-    public double getAmountDeposited() {
-        return amountDeposited;
-    }
-
     public void setAmountDeposited(double amountDeposited) {
         this.amountDeposited = amountDeposited;
-    }
-
-    public double getAmountWithdrawn() {
-        return amountWithdrawn;
     }
 
     public void setAmountWithdrawn(double amountWithdrawn) {
@@ -65,9 +53,6 @@ public class Transactions {
         this.sourceCurrency = sourceCurrency;
     }
 
-    public String getTargetCurrency() {
-        return targetCurrency;
-    }
 
     public void setTargetCurrency(String targetCurrency) {
         this.targetCurrency = targetCurrency;
@@ -90,25 +75,25 @@ public class Transactions {
     @Override
     public String toString() {
         if(checkIfEmptyValuesExistInTheTransaction()) {
-           return String.format("sourceIban = %s\n" +
-                    "sourceBank = %s\n" +
+           return String.format("Source Iban: %s\n" +
+                    "Bank: %s\n" +
                     "Transferred amount: %.2f\n" +
                     "Deposited amount: %.2f\n" +
                     "Withdrawn amount: %.2f\n" +
-                    "sourceCurrency = %s\n" +
-                    "exchangeRate= %.2f\n" +
-                    "timeStamp = %s\n", sourceIban, sourceBank, amountTransferred, amountDeposited, amountWithdrawn, sourceCurrency, exchangeRate, timestamp);
+                    "Currency: %s\n" +
+                    "ExchangeRate: %.2f\n" +
+                    "timestamp: %s\n", sourceIban, sourceBank, amountTransferred, amountDeposited, amountWithdrawn, sourceCurrency, exchangeRate, timestamp);
         }
-        return String.format("sourceIban = %s\n" +
-                "targetIban = %s\n" +
-                "sourceBank = %s\n" +
-                "targetBank = %s\n" +
+        return String.format("Source Iban = %s\n" +
+                "Target Iban: %s\n" +
+                "Source Bank: %s\n" +
+                "Target Bank: %s\n" +
                 "Transferred amount: %.2f\n" +
                 "Deposited amount: %.2f\n" +
                 "Withdrawn amount: %.2f\n" +
-                "sourceCurrency = %s\n" +
-                "targetCurrency = %s\n" +
-                "exchangeRate= %.2f\n" +
-                "timeStamp = %s\n", sourceIban, targetIban, sourceBank, targetBank, amountTransferred, amountDeposited, amountWithdrawn, sourceCurrency, targetCurrency, exchangeRate, timestamp);
+                "Source Currency: %s\n" +
+                "Target Currency: %s\n" +
+                "ExchangeRate: %.2f\n" +
+                "timestamp: %s\n", sourceIban, targetIban, sourceBank, targetBank, amountTransferred, amountDeposited, amountWithdrawn, sourceCurrency, targetCurrency, exchangeRate, timestamp);
     }
 }

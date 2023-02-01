@@ -93,10 +93,6 @@ public class BankAccount {
         return message;
     }
 
-    private boolean checkIfAValueIsNull(Transactions accountTransaction) {
-       return accountTransaction.getTargetBank() == null;
-    }
-
     public BankInstitution getBankInstitution() {
         return bankInstitution;
     }
