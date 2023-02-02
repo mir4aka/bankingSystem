@@ -25,14 +25,13 @@ public class BankAccount {
         this.owner.setId(ownerId);
         this.bankInstitution = bankInstitution;
         this.iban = iban;
-        setCurrency(currency);
-        setAvailableAmount(availableAmount);
-        setAccountType(accountType);
-
         this.transactions = new Transactions();
         this.accountTypes = new ArrayList<>();
         this.accountTransactions = new LinkedList<>();
 
+        setCurrency(currency);
+        setAvailableAmount(availableAmount);
+        setAccountType(accountType);
         addsAccountToBank();
     }
 
@@ -68,19 +67,13 @@ public class BankAccount {
 
     public void prepareBankStatement(LocalDateTime start, LocalDateTime end) {
 
-        LocalDateTime startDate = LocalDateTime.parse(start.format(DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy")));
-        LocalDateTime endDate = LocalDateTime.parse(end.format(DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy")));
+        if (accountTransactions.isEmpty()) {
+            System.out.println("No transactions for the account of " + owner.getFirstName() + " " + owner.getLastName() + " for the given period of time.");
+        }
 
         printAccountInformation(start, end);
         for (Transactions transaction : getAccountTransactions()) {
-            LocalDateTime transactionDate = transaction.getTimestamp();
-            if (transactionDate.isAfter(startDate) && transactionDate.isBefore(endDate)) {
-                checkIfTheTransactionIsADepositWithdrawOrATransfer(transaction);
-            } else {
-                System.out.println("------");
-                System.out.println("No transactions for the account of " + owner.getFirstName() + " " + owner.getLastName() + " for the given period of time.");
-                System.out.println("------");
-            }
+            checkIfTheTransactionIsADepositWithdrawOrATransfer(transaction);
         }
     }
 
