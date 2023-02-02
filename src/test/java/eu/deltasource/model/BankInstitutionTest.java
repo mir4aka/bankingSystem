@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 class BankInstitutionTest {
 
     @Test
-    void testIfABlankFirstNameIsEntered() {
+    void testIfABlankBankNameIsEntered() {
         //GIVEN
         Assertions.assertThrows(InvalidInputException.class, () -> {
             BankInstitution bankInstitution = new BankInstitution("    ", "ivan 2");
@@ -15,7 +15,7 @@ class BankInstitutionTest {
     }
 
     @Test
-    void testIfABlankLastNameIsEntered() {
+    void testIfABlankAddressIsEntered() {
         //GIVEN
         Assertions.assertThrows(InvalidInputException.class, () -> {
             BankInstitution bankInstitution = new BankInstitution("dsk", "         ");

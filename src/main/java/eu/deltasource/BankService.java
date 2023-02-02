@@ -1,5 +1,7 @@
 package eu.deltasource;
 
+import eu.deltasource.enums.AccountType;
+import eu.deltasource.enums.Currency;
 import eu.deltasource.exception.*;
 import eu.deltasource.model.BankAccount;
 import eu.deltasource.model.Transactions;

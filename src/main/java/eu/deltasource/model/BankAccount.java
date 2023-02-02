@@ -1,9 +1,8 @@
 package eu.deltasource.model;
 
-import eu.deltasource.AccountType;
+import eu.deltasource.enums.AccountType;
 import eu.deltasource.exception.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;

@@ -1,4 +1,4 @@
-package eu.deltasource;
+package eu.deltasource.enums;
 
 public enum Currency {
     BGN("BGN"),
