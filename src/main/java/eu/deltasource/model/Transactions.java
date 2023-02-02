@@ -1,8 +1,11 @@
 package eu.deltasource.model;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-
+/**
+ * This is a model of transaction and keeps information about a transaction such as amount, time of the transaction, currency, etc....
+ */
 public class Transactions {
     private String sourceIban;
     private String targetIban;
@@ -14,7 +17,7 @@ public class Transactions {
     private String sourceCurrency;
     private String targetCurrency;
     private double exchangeRate;
-    private LocalDate timestamp;
+    private LocalDateTime timestamp;
 
     public String getSourceIban() {
         return sourceIban;
@@ -89,14 +92,18 @@ public class Transactions {
         this.exchangeRate = exchangeRate;
     }
 
-    public LocalDate getTimestamp() {
+    public LocalDateTime getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(LocalDate timestamp) {
+    public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
     }
 
+    /**
+     * This method returns boolean if the params below are null in case if the transaction is a deposit or a withdraw, afterwards prints out the information.
+     * @return
+     */
     private boolean checkIfEmptyValuesExistInTheTransaction() {
         return targetBank == null && targetCurrency == null && targetIban == null;
     }

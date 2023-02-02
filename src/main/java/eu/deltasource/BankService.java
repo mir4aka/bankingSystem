@@ -4,30 +4,66 @@ import eu.deltasource.exception.*;
 import eu.deltasource.model.BankAccount;
 import eu.deltasource.model.Transactions;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+
+//TODO
+// read about; replace conditional with polymorphism
+// create repository that keeps track of the transactions in the bank;
 
 /**
  * This is the bank service class which is called if a transaction is going to be fulfilled(deposit, withdraw,transfer).
  */
 public class BankService {
 
-    public void depositMoneyToAccount(BankAccount account, double amountToDeposit, LocalDate date) {
+    public void depositMoneyToAccount(BankAccount account, double amountToDeposit, LocalDateTime date) {
+        if (date.isBefore(LocalDateTime.now())) {
+            throw new InvalidInputException("You cannot enter a transaction time before.");
+        }
+
         double moneyAvailable = increaseTheAmountOfMoneyInTheAccount(account, amountToDeposit);
 
         account.setAvailableAmount(moneyAvailable);
 
-        Transactions transaction = updateDepositTransaction(account, amountToDeposit, date);
+        Transactions transaction = updateDepositTransaction(account, amountToDeposit);
 
         account.addTransaction(transaction);
     }
 
-    public void withdrawMoneyFromAccount(BankAccount account, double amountToWithdraw, LocalDate date) {
+    public void depositMoneyToAccount(BankAccount account, double amountToDeposit) {
+        double moneyAvailable = increaseTheAmountOfMoneyInTheAccount(account, amountToDeposit);
+
+        account.setAvailableAmount(moneyAvailable);
+
+        Transactions transaction = updateDepositTransaction(account, amountToDeposit);
+
+        account.addTransaction(transaction);
+    }
+
+    public void withdrawMoneyFromAccount(BankAccount account, double amountToWithdraw, LocalDateTime date) {
+
+        if (date.isBefore(LocalDateTime.now())) {
+            throw new InvalidInputException("You cannot enter a transaction time before.");
+        }
+
         double moneyAvailable = decreaseTheAmountOfMoneyInTheAccount(account, amountToWithdraw);
 
         account.setAvailableAmount(moneyAvailable);
 
-        Transactions transaction = updateWithdrawTransaction(account, amountToWithdraw, date);
+        Transactions transaction = updateWithdrawTransaction(account, amountToWithdraw);
+
+        account.addTransaction(transaction);
+    }
+
+    public void withdrawMoneyFromAccount(BankAccount account, double amountToWithdraw) {
+
+        double moneyAvailable = decreaseTheAmountOfMoneyInTheAccount(account, amountToWithdraw);
+
+        account.setAvailableAmount(moneyAvailable);
+
+        Transactions transaction = updateWithdrawTransaction(account, amountToWithdraw);
+
         account.addTransaction(transaction);
     }
 
@@ -39,7 +75,7 @@ public class BankService {
      * @param amountToTransfer
      * @param date
      */
-    public void transferMoney(BankAccount sourceAccount, BankAccount targetAccount, double amountToTransfer, LocalDate date) {
+    public void transferMoney(BankAccount sourceAccount, BankAccount targetAccount, double amountToTransfer, LocalDateTime date) {
         transfer(sourceAccount, targetAccount, amountToTransfer, date);
     }
 
@@ -51,7 +87,7 @@ public class BankService {
      * @param amountToTransfer
      * @param date
      */
-    private void transfer(BankAccount sourceAccount, BankAccount targetAccount, double amountToTransfer, LocalDate date) {
+    private void transfer(BankAccount sourceAccount, BankAccount targetAccount, double amountToTransfer, LocalDateTime date) {
         checkValidAccounts(sourceAccount, targetAccount, amountToTransfer);
 
         double fees = calculateFees(sourceAccount, targetAccount);
@@ -71,22 +107,25 @@ public class BankService {
 
         moneyInSourceAccount -= amountToBeWithdrawnFromSourceAccount;
 
-        sourceAccount.setAvailableAmount(moneyInSourceAccount);
+        sourceAccount.setAvailableAmount(Double.parseDouble(String.format("%.2f", moneyInSourceAccount)));
 
         moneyInTargetAccount += amountToBeDepositedToTheTargetAccount;
 
-        targetAccount.setAvailableAmount(moneyInTargetAccount);
+        targetAccount.setAvailableAmount(Double.parseDouble(String.format("%.2f", moneyInTargetAccount)));
 
-        updatingSourceAccountAndTargetAccountTransactions(sourceAccount, targetAccount, date, amountToBeDepositedToTheTargetAccount, exchangeRate, amountToBeWithdrawnFromSourceAccount);
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
+        String format = dateTimeFormatter.format(LocalDateTime.now());
+
+        LocalDateTime dateOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
+
+        updatingSourceAccountAndTargetAccountTransactions(sourceAccount, targetAccount, dateOfTransaction, amountToBeDepositedToTheTargetAccount, exchangeRate, amountToBeWithdrawnFromSourceAccount);
     }
 
     private double increaseTheAmountOfMoneyInTheAccount(BankAccount account, double amountToDeposit) {
-        double moneyAvailable = account.getAvailableAmount();
-
-        if (account.getAccountTypes().contains(AccountTypes.CURRENT_ACCOUNT) || account.getAccountTypes().contains(AccountTypes.SAVINGS_ACCOUNT)) {
-            moneyAvailable += amountToDeposit;
+        if (account.getAccountTypes().contains(AccountType.CURRENT_ACCOUNT) || account.getAccountTypes().contains(AccountType.SAVINGS_ACCOUNT)) {
+            account.addAmount(amountToDeposit);
         }
-        return moneyAvailable;
+        return account.getAvailableAmount();
     }
 
     private double decreaseTheAmountOfMoneyInTheAccount(BankAccount account, double amountToWithdraw) {
@@ -96,10 +135,11 @@ public class BankService {
             throw new NotEnoughMoneyToWithdrawException("Not enough money to withdraw.");
         }
 
-        if (account.getAccountTypes().contains(AccountTypes.CURRENT_ACCOUNT) || account.getAccountTypes().contains(AccountTypes.SAVINGS_ACCOUNT)) {
-            moneyAvailable -= amountToWithdraw;
+        if (account.getAccountTypes().contains(AccountType.CURRENT_ACCOUNT) || account.getAccountTypes().contains(AccountType.SAVINGS_ACCOUNT)) {
+            account.removeAmount(amountToWithdraw);
+
         }
-        return moneyAvailable;
+        return account.getAvailableAmount();
     }
 
     /**
@@ -159,23 +199,30 @@ public class BankService {
      * @param exchangeRate
      * @param amountToBeWithdrawnFromSourceAccount
      */
-    private void updatingSourceAccountAndTargetAccountTransactions(BankAccount sourceAccount, BankAccount targetAccount, LocalDate date, double amountToBeDepositedToTargetAccount, double exchangeRate, double amountToBeWithdrawnFromSourceAccount) {
+    private void updatingSourceAccountAndTargetAccountTransactions(BankAccount sourceAccount, BankAccount targetAccount,
+                                                                   LocalDateTime date, double amountToBeDepositedToTargetAccount,
+                                                                   double exchangeRate, double amountToBeWithdrawnFromSourceAccount) {
         List<Transactions> sourceAccountTransactions = sourceAccount.getAccountTransactions();
         List<Transactions> targetAccountTransactions = targetAccount.getAccountTransactions();
 
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
+        String format = dateTimeFormatter.format(LocalDateTime.now());
+
+        LocalDateTime dateOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
+
         if (sourceAccountTransactions.isEmpty()) {
-            Transactions sourceAccountTransaction = updateSourceAccountTransactions(sourceAccount, targetAccount, amountToBeWithdrawnFromSourceAccount, exchangeRate, date);
+            Transactions sourceAccountTransaction = updateSourceAccountTransactions(sourceAccount, targetAccount, amountToBeWithdrawnFromSourceAccount, exchangeRate, dateOfTransaction);
             sourceAccount.addTransaction(sourceAccountTransaction);
         } else {
-            Transactions newTransaction = updateSourceAccountTransactions(sourceAccount, targetAccount, amountToBeWithdrawnFromSourceAccount, exchangeRate, date);
+            Transactions newTransaction = updateSourceAccountTransactions(sourceAccount, targetAccount, amountToBeWithdrawnFromSourceAccount, exchangeRate, dateOfTransaction);
             sourceAccount.addTransaction(newTransaction);
         }
 
         if (targetAccountTransactions.isEmpty()) {
-            Transactions targetAccountTransaction = updateTargetAccountTransactions(sourceAccount, targetAccount, amountToBeDepositedToTargetAccount, exchangeRate, date);
+            Transactions targetAccountTransaction = updateTargetAccountTransactions(sourceAccount, targetAccount, amountToBeDepositedToTargetAccount, exchangeRate, dateOfTransaction);
             targetAccount.addTransaction(targetAccountTransaction);
         } else {
-            Transactions newTransaction = updateTargetAccountTransactions(sourceAccount, targetAccount, amountToBeDepositedToTargetAccount, exchangeRate, date);
+            Transactions newTransaction = updateTargetAccountTransactions(sourceAccount, targetAccount, amountToBeDepositedToTargetAccount, exchangeRate, dateOfTransaction);
             targetAccount.addTransaction(newTransaction);
         }
     }
@@ -185,17 +232,22 @@ public class BankService {
      *
      * @param account
      * @param amount
-     * @param date
      * @return
      */
-    private Transactions updateDepositTransaction(BankAccount account, double amount, LocalDate date) {
+    private Transactions updateDepositTransaction(BankAccount account, double amount) {
         Transactions transaction = new Transactions();
 
         transaction.setSourceBank(account.getBankInstitution());
         transaction.setAmountDeposited(amount);
         transaction.setSourceCurrency(account.getCurrency());
         transaction.setSourceIban(account.getIban());
-        transaction.setTimestamp(date);
+
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
+        String format = dateTimeFormatter.format(LocalDateTime.now());
+
+        LocalDateTime parse = LocalDateTime.parse(format, dateTimeFormatter);
+
+        transaction.setTimestamp(parse);
 
         return transaction;
     }
@@ -205,17 +257,21 @@ public class BankService {
      *
      * @param account
      * @param amount
-     * @param date
      * @return
      */
-    private Transactions updateWithdrawTransaction(BankAccount account, double amount, LocalDate date) {
+    private Transactions updateWithdrawTransaction(BankAccount account, double amount) {
         Transactions transaction = new Transactions();
 
         transaction.setSourceBank(account.getBankInstitution());
         transaction.setAmountWithdrawn(amount);
         transaction.setSourceCurrency(account.getCurrency());
         transaction.setSourceIban(account.getIban());
-        transaction.setTimestamp(date);
+
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
+        String format = dateTimeFormatter.format(LocalDateTime.now());
+        LocalDateTime parse = LocalDateTime.parse(format, dateTimeFormatter);
+
+        transaction.setTimestamp(parse);
 
         return transaction;
     }
@@ -230,7 +286,8 @@ public class BankService {
      * @param date
      * @return
      */
-    private Transactions updateSourceAccountTransactions(BankAccount sourceAccount, BankAccount targetAccount, double amount, double exchangeRate, LocalDate date) {
+    private Transactions updateSourceAccountTransactions(BankAccount sourceAccount, BankAccount targetAccount,
+                                                         double amount, double exchangeRate, LocalDateTime date) {
         Transactions transaction = new Transactions();
         transaction.setExchangeRate(exchangeRate);
         transaction.setSourceBank(sourceAccount.getBankInstitution());
@@ -242,7 +299,12 @@ public class BankService {
         transaction.setSourceIban(sourceAccount.getIban());
         transaction.setTargetIban(targetAccount.getIban());
 
-        transaction.setTimestamp(date);
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
+        String format = dateTimeFormatter.format(LocalDateTime.now());
+
+        LocalDateTime parse = LocalDateTime.parse(format, dateTimeFormatter);
+
+        transaction.setTimestamp(parse);
         return transaction;
     }
 
@@ -256,7 +318,8 @@ public class BankService {
      * @param date
      * @return
      */
-    private Transactions updateTargetAccountTransactions(BankAccount sourceAccount, BankAccount targetAccount, double amount, double exchangeRate, LocalDate date) {
+    private Transactions updateTargetAccountTransactions(BankAccount sourceAccount, BankAccount targetAccount,
+                                                         double amount, double exchangeRate, LocalDateTime date) {
         Transactions transaction = new Transactions();
         transaction.setExchangeRate(exchangeRate);
         transaction.setSourceBank(sourceAccount.getBankInstitution());
@@ -268,19 +331,25 @@ public class BankService {
         transaction.setSourceIban(sourceAccount.getIban());
         transaction.setTargetIban(targetAccount.getIban());
 
-        transaction.setTimestamp(date);
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
+        String format = dateTimeFormatter.format(LocalDateTime.now());
+
+        LocalDateTime parse = LocalDateTime.parse(format, dateTimeFormatter);
+
+        transaction.setTimestamp(parse);
         return transaction;
     }
 
     /**
      * This method checks if the source account's balance is insufficient for a transfer, if the customer is trying to transfer money to his own bank account,
      * if the customer is trying to transfer money between accounts different from `Current Account`.
+     *
      * @param sourceAccount
      * @param targetAccount
      * @param amountToDeposit
      */
     private void checkValidAccounts(BankAccount sourceAccount, BankAccount targetAccount, double amountToDeposit) {
-        if (!sourceAccount.getAccountTypes().contains(AccountTypes.CURRENT_ACCOUNT) || !targetAccount.getAccountTypes().contains(AccountTypes.CURRENT_ACCOUNT)) {
+        if (!sourceAccount.getAccountTypes().contains(AccountType.CURRENT_ACCOUNT) || !targetAccount.getAccountTypes().contains(AccountType.CURRENT_ACCOUNT)) {
             throw new TransfersAllowedBetweenCurrentAccountsException("Transfers are only allowed between two Current accounts.\n");
         }
 
@@ -296,34 +365,35 @@ public class BankService {
     /**
      * This method checks if the source account and target account's currencies are the same or not. Therefore, the amountToDeposit is being calculated
      * based on the result.
+     *
      * @param amountToDeposit
      * @param sourceAccountCurrency
      * @param targetAccountCurrency
      * @return
      */
     private double checkCurrenciesAndCalculateTheAmountToBeDeposited(double amountToDeposit, String sourceAccountCurrency, String targetAccountCurrency) {
-        if (sourceAccountCurrency.equals("BGN")) {
-            if (targetAccountCurrency.equals("USD")) {
+        if (sourceAccountCurrency.equals(Currency.BGN.getMessage())) {
+            if (targetAccountCurrency.equals(Currency.USD.getMessage())) {
                 amountToDeposit = amountToDeposit * 0.55;
-            } else if (targetAccountCurrency.equals("GBP")) {
+            } else if (targetAccountCurrency.equals(Currency.GBP.getMessage())) {
                 amountToDeposit = amountToDeposit * 0.45;
-            } else if (targetAccountCurrency.equals("BGN")){
+            } else if (targetAccountCurrency.equals(Currency.BGN.getMessage())) {
                 amountToDeposit = amountToDeposit * 1;
             }
-        } else if (sourceAccountCurrency.equals("USD")) {
-            if (targetAccountCurrency.equals("BGN")) {
+        } else if (sourceAccountCurrency.equals(Currency.USD.getMessage())) {
+            if (targetAccountCurrency.equals(Currency.BGN.getMessage())) {
                 amountToDeposit = amountToDeposit * 1.80;
-            } else if (targetAccountCurrency.equals("GBP")) {
+            } else if (targetAccountCurrency.equals(Currency.GBP.getMessage())) {
                 amountToDeposit = amountToDeposit * 0.80;
-            } else if (targetAccountCurrency.equals("USD")) {
+            } else if (targetAccountCurrency.equals(Currency.USD.getMessage())) {
                 amountToDeposit = amountToDeposit * 1;
             }
-        } else if (sourceAccountCurrency.equals("GBP")) {
-            if (targetAccountCurrency.equals("BGN")) {
+        } else if (sourceAccountCurrency.equals(Currency.GBP.getMessage())) {
+            if (targetAccountCurrency.equals(Currency.BGN.getMessage())) {
                 amountToDeposit = amountToDeposit * 2.23;
-            } else if (targetAccountCurrency.equals("USD")) {
+            } else if (targetAccountCurrency.equals(Currency.USD.getMessage())) {
                 amountToDeposit = amountToDeposit * 1.24;
-            } else if (targetAccountCurrency.equals("GBP")) {
+            } else if (targetAccountCurrency.equals(Currency.GBP.getMessage())) {
                 amountToDeposit = amountToDeposit * 1;
             }
         }

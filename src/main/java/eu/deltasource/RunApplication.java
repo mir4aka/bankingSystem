@@ -8,6 +8,7 @@ import eu.deltasource.model.BankInstitution;
 import eu.deltasource.model.Owner;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class RunApplication {
     public void run() {
@@ -18,34 +19,37 @@ public class RunApplication {
         BankInstitution dsk = new BankInstitution("dsk", "sdf");
         BankInstitution raifaizen = new BankInstitution("raifaizen", "sdfewr");
 
-        BankAccount nikic = new BankAccount(niki4, "02", dsk, "frewer", "GBP", 30, "CurrentAccount");
+        BankAccount nikic = new BankAccount(niki4, "02", dsk, "frewer", "BGN", 30, "CurrentAccount");
 
-        BankAccount mirkic = new BankAccount(mirki4, "022", raifaizen, "freweer", "USD", 30, "CurrentAccount");
+        BankAccount mirkic = new BankAccount(mirki4, "022", dsk, "freweer", "BGN", 30, "SavingsAccount");
 
         BankService bankService = new BankService();
         try {
 //            raifaizen.withdrawMoneyFromAccount(mirkic, 10, LocalDate.of(2022, 2, 1));
 //            dsk.depositMoneyToAccount(nikic, 500, LocalDate.of(2023, 2, 1));
 //            dsk.transferMoney(nikic, mirkic, 10, LocalDate.of(2023, 2, 1));
-            bankService.depositMoneyToAccount(mirkic, 2, LocalDate.of(2003, 2,1));
-            bankService.withdrawMoneyFromAccount(mirkic, 10, LocalDate.of(2003, 3,1));
-            bankService.transferMoney(nikic, mirkic, 10, LocalDate.of(2023, 2,1));
+//            bankService.depositMoneyToAccount(mirkic, 2, LocalDateTime.of(2023, 2,2, 16,15));
+//            bankService.withdrawMoneyFromAccount(mirkic, 10, LocalDateTime.of(2023, 2,2, 15, 25, 22));
+//            bankService.depositMoneyToAccount(nikic, 2);
+//            bankService.transferMoney(nikic, mirkic, 10, LocalDateTime.of(2023, 3,2, 19,18,9));
 
         } catch (TransfersAllowedBetweenCurrentAccountsException | InvalidCurrencyException |
                  NotAllowedToTransferToTheSameBankAccountException e) {
             System.out.println(e.getMessage());
         }
 
-//        System.out.println(nikic);
+//        System.out.println(mirkic.getBankName());
+
+        System.out.println(nikic);
 //
 //
 //        System.out.println(mirkic.allTransactions());
-//        System.out.println(mirkic);
+        System.out.println(mirkic);
 
-        mirkic.prepareBankStatement(LocalDate.of(2002,2,1), LocalDate.of(2004,3,1));
-        nikic.prepareBankStatement(LocalDate.of(2002,2,1), LocalDate.of(2004,3,1));
-        System.out.println(nikic.allTransactions());
-        System.out.println(mirkic.allTransactions());
+//        mirkic.prepareBankStatement(LocalDateTime.of(2002,2,1), LocalDateTime.of(2004,3,1));
+//        nikic.prepareBankStatement(LocalDateTime.of(2002,2,1), LocalDateTime.of(2004,3,1));
+//        System.out.println(nikic.allTransactions());
+//        System.out.println(mirkic.allTransactions());
 
     }
 }

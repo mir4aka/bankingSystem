@@ -1,12 +1,11 @@
 package eu.deltasource.model;
 
-import eu.deltasource.AccountTypes;
-import eu.deltasource.exception.AlreadyExistingIdException;
-import eu.deltasource.exception.AccountTypeCannotBeDifferentFromCurrentAndSavingsException;
-import eu.deltasource.exception.InvalidCurrencyException;
-import eu.deltasource.exception.InvalidInputException;
+import eu.deltasource.AccountType;
+import eu.deltasource.exception.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class BankAccount {
@@ -14,7 +13,7 @@ public class BankAccount {
     private Owner owner;
     private String iban;
     private String currency;
-    private List<AccountTypes> accountTypes;
+    private List<AccountType> accountTypes;
     private double availableAmount;
     private BankInstitution bankInstitution;
     private Transactions transactions;
@@ -25,30 +24,13 @@ public class BankAccount {
         this.owner.setId(ownerId);
         this.bankInstitution = bankInstitution;
         this.iban = iban;
-        this.availableAmount = availableAmount;
         this.transactions = new Transactions();
         this.accountTypes = new ArrayList<>();
 
-        try {
-            setAccountType(accountType);
-//            assignsAccountTypeToAccount(accountType);
-            addsAccountToBank();
-            setCurrency(currency);
-        } catch (AlreadyExistingIdException | IllegalArgumentException |
-                 AccountTypeCannotBeDifferentFromCurrentAndSavingsException | InvalidCurrencyException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    private void assignsAccountTypeToAccount(String accountType) {
-        if (getAccountTypes().contains(AccountTypes.CURRENT_ACCOUNT) && getAccountTypes().contains(AccountTypes.SAVINGS_ACCOUNT)) {
-            throw new AlreadyExistingIdException("You already have two accounts. (Current and Savings)\n");
-        }
-        assignAccounts(accountType);
-    }
-
-    private void assignAccounts(String accountType) {
-        accountTypes.add(AccountTypes.valueOf(accountType));
+        setAvailableAmount(availableAmount);
+        setAccountType(accountType);
+        addsAccountToBank();
+        setCurrency(currency);
     }
 
     private void addsAccountToBank() {
@@ -57,7 +39,7 @@ public class BankAccount {
         if (numberOfCustomers.containsKey(owner.getId())) {
             throw new AlreadyExistingIdException("A person with that id already has an account in this bank.\n");
         }
-        numberOfCustomers.putIfAbsent(owner.getId(), 1);
+        getBankInstitution().addAccountToNumberOfCustomers(owner.getId(), 1);
     }
 
     public String allTransactions() {
@@ -81,11 +63,15 @@ public class BankAccount {
         return transactions.toString();
     }
 
-    public void prepareBankStatement(LocalDate start, LocalDate end) {
+    public void prepareBankStatement(LocalDateTime start, LocalDateTime end) {
+
+        LocalDateTime startDate = LocalDateTime.parse(start.format(DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy")));
+        LocalDateTime endDate = LocalDateTime.parse(end.format(DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy")));
+
         printAccountInformation(start, end);
         for (Transactions transaction : getAccountTransactions()) {
-            LocalDate transactionDate = transaction.getTimestamp();
-            if (transactionDate.isAfter(start) && transactionDate.isBefore(end)) {
+            LocalDateTime transactionDate = transaction.getTimestamp();
+            if (transactionDate.isAfter(startDate) && transactionDate.isBefore(endDate)) {
                 checkIfTheTransactionIsADepositWithdrawOrATransfer(transaction);
             } else {
                 System.out.println("------");
@@ -95,7 +81,7 @@ public class BankAccount {
         }
     }
 
-    private void printAccountInformation(LocalDate start, LocalDate end) {
+    private void printAccountInformation(LocalDateTime start, LocalDateTime end) {
         int startDayOfMonth = start.getDayOfMonth();
         int startMonthValue = start.getMonthValue();
         int startYear = start.getYear();
@@ -163,6 +149,14 @@ public class BankAccount {
         System.out.println("----------------<");
     }
 
+    public void addAmount(double amount) {
+        availableAmount += amount;
+    }
+
+    public void removeAmount(double amount) {
+        availableAmount -= amount;
+    }
+
     public Owner getOwner() {
         return owner;
     }
@@ -192,6 +186,9 @@ public class BankAccount {
     }
 
     public void setAvailableAmount(double availableAmount) {
+        if (availableAmount < 0) {
+            throw new AvailableAmountCannotBeNegativeException("You can't assign a negative value of the balance of the account.");
+        }
         this.availableAmount = availableAmount;
     }
 
@@ -201,20 +198,18 @@ public class BankAccount {
 
     public void addTransaction(Transactions transaction) {
         accountTransactions.add(transaction);
+        getBankInstitution().addTransactions(transaction);
     }
 
-    public List<AccountTypes> getAccountTypes() {
-        if (accountTypes.size() == 0) {
-            throw new InvalidInputException("No account types of this bank account.");
-        }
+    public List<AccountType> getAccountTypes() {
         return Collections.unmodifiableList(accountTypes);
     }
 
     private void setAccountType(String accountType) {
-        if (accountType.equals(AccountTypes.CURRENT_ACCOUNT.getMessage())) {
-            accountTypes.add(AccountTypes.CURRENT_ACCOUNT);
-        } else if (accountType.equals(AccountTypes.SAVINGS_ACCOUNT.getMessage())) {
-            accountTypes.add(AccountTypes.SAVINGS_ACCOUNT);
+        if (accountType.equals(AccountType.CURRENT_ACCOUNT.getMessage())) {
+            accountTypes.add(AccountType.CURRENT_ACCOUNT);
+        } else if (accountType.equals(AccountType.SAVINGS_ACCOUNT.getMessage())) {
+            accountTypes.add(AccountType.SAVINGS_ACCOUNT);
         } else {
             throw new AccountTypeCannotBeDifferentFromCurrentAndSavingsException("Account type can be either `Current` or `Savings` type of account.");
         }

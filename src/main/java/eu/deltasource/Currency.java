@@ -1,11 +1,13 @@
 package eu.deltasource;
 
-public enum AccountTypes {
+public enum Currency {
+    BGN("BGN"),
+    USD("USD"),
+    GBP("GBP");
 
-    CURRENT_ACCOUNT("CurrentAccount"),
-    SAVINGS_ACCOUNT("SavingsAccount");
     private final String message;
-    AccountTypes(String message) {
+
+    Currency(String message) {
         this.message = message;
     }
 
