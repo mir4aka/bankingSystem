@@ -1,5 +1,6 @@
 package eu.deltasource.model;
 
+import eu.deltasource.enums.ExceptionMessage;
 import eu.deltasource.exception.InvalidInputException;
 
 public class Owner {
@@ -19,7 +20,7 @@ public class Owner {
 
     public void setFirstName(String firstName) {
         if (firstName.isBlank()) {
-            throw new InvalidInputException("First name cannot be blank.");
+            throw new InvalidInputException(ExceptionMessage.FIRST_NAME_INVALID.getMessage());
         }
         this.firstName = firstName;
     }
@@ -30,7 +31,7 @@ public class Owner {
 
     public void setLastName(String lastName) {
         if (lastName.isBlank()) {
-            throw new InvalidInputException("Last name cannot be blank.");
+            throw new InvalidInputException(ExceptionMessage.LAST_NAME_INVALID.getMessage());
         }
         this.lastName = lastName;
     }
@@ -41,7 +42,7 @@ public class Owner {
 
     public void setId(String id) {
         if (id.isBlank()) {
-            throw new InvalidInputException("Id cannot be blank.");
+            throw new InvalidInputException(ExceptionMessage.ID_INVALID.getMessage());
         }
         this.id = id;
     }

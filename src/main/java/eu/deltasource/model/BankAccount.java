@@ -1,6 +1,8 @@
 package eu.deltasource.model;
 
 import eu.deltasource.enums.AccountType;
+import eu.deltasource.enums.Currency;
+import eu.deltasource.enums.ExceptionMessage;
 import eu.deltasource.exception.*;
 
 import java.time.LocalDateTime;
@@ -12,24 +14,26 @@ public class BankAccount {
     private Owner owner;
     private String iban;
     private String currency;
-    private List<AccountType> accountTypes;
     private double availableAmount;
     private BankInstitution bankInstitution;
     private Transactions transactions;
-    private List<Transactions> accountTransactions = new LinkedList<>();
+    private List<AccountType> accountTypes;
+    private List<Transactions> accountTransactions;
 
     public BankAccount(Owner owner, String ownerId, BankInstitution bankInstitution, String iban, String currency, double availableAmount, String accountType) {
         this.owner = owner;
         this.owner.setId(ownerId);
         this.bankInstitution = bankInstitution;
         this.iban = iban;
-        this.transactions = new Transactions();
-        this.accountTypes = new ArrayList<>();
-
+        setCurrency(currency);
         setAvailableAmount(availableAmount);
         setAccountType(accountType);
+
+        this.transactions = new Transactions();
+        this.accountTypes = new ArrayList<>();
+        this.accountTransactions = new LinkedList<>();
+
         addsAccountToBank();
-        setCurrency(currency);
     }
 
     private void addsAccountToBank() {
@@ -173,10 +177,10 @@ public class BankAccount {
     }
 
     private void setCurrency(String currency) {
-        if (currency.equals("BGN") || currency.equals("USD") || currency.equals("GBP")) {
+        if (currency.equals(Currency.BGN.getMessage()) || currency.equals(Currency.USD.getMessage()) || currency.equals(Currency.GBP.getMessage())) {
             this.currency = currency;
         } else {
-            throw new InvalidCurrencyException("Invalid currency for a bank account. You may select BGN, USD or GBP.");
+            throw new InvalidCurrencyException(ExceptionMessage.INVALID_CURRENCY.getMessage());
         }
     }
 
@@ -186,7 +190,7 @@ public class BankAccount {
 
     public void setAvailableAmount(double availableAmount) {
         if (availableAmount < 0) {
-            throw new AvailableAmountCannotBeNegativeException("You can't assign a negative value of the balance of the account.");
+            throw new AvailableAmountCannotBeNegativeException(ExceptionMessage.INVALID_AMOUNT.getMessage());
         }
         this.availableAmount = availableAmount;
     }
@@ -210,7 +214,7 @@ public class BankAccount {
         } else if (accountType.equals(AccountType.SAVINGS_ACCOUNT.getMessage())) {
             accountTypes.add(AccountType.SAVINGS_ACCOUNT);
         } else {
-            throw new AccountTypeCannotBeDifferentFromCurrentAndSavingsException("Account type can be either `Current` or `Savings` type of account.");
+            throw new AccountTypeCannotBeDifferentFromCurrentAndSavingsException(ExceptionMessage.INVALID_ACCOUNT_TYPE.getMessage());
         }
     }
 

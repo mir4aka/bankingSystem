@@ -1,5 +1,6 @@
 package eu.deltasource.model;
 
+import eu.deltasource.enums.ExceptionMessage;
 import eu.deltasource.exception.InvalidInputException;
 
 import java.util.*;
@@ -35,14 +36,14 @@ public class BankInstitution {
 
     public void setBankName(String bankName) {
         if (bankName.isBlank()) {
-            throw new InvalidInputException("Bank name cannot be blank.");
+            throw new InvalidInputException(ExceptionMessage.INVALID_BANK_NAME.getMessage());
         }
         this.bankName = bankName;
     }
 
     public void setBankAddress(String bankAddress) {
         if (bankAddress.isBlank()) {
-            throw new InvalidInputException("Bank address cannot be blank.");
+            throw new InvalidInputException(ExceptionMessage.INVALID_ADDRESS.getMessage());
         }
         this.bankAddress = bankAddress;
     }
