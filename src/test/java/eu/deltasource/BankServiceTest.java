@@ -22,7 +22,7 @@ class BankServiceTest {
         BankService bankService = new BankService();
         BankInstitution bankInstitution = new BankInstitution("dsk", "ivan 2");
         BankAccount bankAccount = new BankAccount(owner, "20", bankInstitution, "odsjdspf", "GBP", 30, "CurrentAccount");
-        LocalDateTime dateTime = LocalDateTime.of(2023, 1, 1, 1, 10);
+        LocalDateTime dateTime = LocalDateTime.of(2028, 1, 1, 1, 10);
 
 
         //WHEN
@@ -39,7 +39,7 @@ class BankServiceTest {
         BankService bankService = new BankService();
         BankInstitution bankInstitution = new BankInstitution("dsk", "ivan 2");
         BankAccount bankAccount = new BankAccount(owner, "20", bankInstitution, "odsjdspf", "GBP", 30, "CurrentAccount");
-        LocalDateTime dateTime = LocalDateTime.of(2023, 1, 1, 1, 10);
+        LocalDateTime dateTime = LocalDateTime.of(2028, 1, 1, 1, 10);
 
         //WHEN
         bankService.withdrawMoneyFromAccount(bankAccount, 5, dateTime);
@@ -55,7 +55,7 @@ class BankServiceTest {
         BankService bankService = new BankService();
         BankInstitution bankInstitution = new BankInstitution("dsk", "ivan 2");
         BankAccount bankAccount = new BankAccount(owner, "20", bankInstitution, "odsjdspf", "GBP", 30, "CurrentAccount");
-        LocalDateTime dateTime = LocalDateTime.of(2023, 1, 1, 1, 10);
+        LocalDateTime dateTime = LocalDateTime.of(2028, 1, 1, 1, 10);
 
         //THEN
         Assertions.assertThrows(NotEnoughMoneyToWithdrawException.class, () -> {
@@ -73,13 +73,13 @@ class BankServiceTest {
         BankInstitution bankInstitution1 = new BankInstitution("raifaizen", "ivan 2");
         BankAccount bankAccount = new BankAccount(owner, "20", bankInstitution, "odsjdspf", "GBP", 30, "CurrentAccount");
         BankAccount bankAccount2 = new BankAccount(owner2, "210", bankInstitution1, "odsjdspf1", "USD", 30, "CurrentAccount");
-        LocalDateTime dateTime = LocalDateTime.of(2023, 1, 1, 1, 10);
+        LocalDateTime dateTime = LocalDateTime.of(2028, 1, 1, 1, 10);
 
         //WHEN
         bankService.transferMoney(bankAccount, bankAccount2, 10, dateTime);
 
         //THEN
-        Assertions.assertEquals(7.59, bankAccount.getAvailableAmount());
+        Assertions.assertEquals(7.99, bankAccount.getAvailableAmount());
         Assertions.assertEquals(42.4, bankAccount2.getAvailableAmount());
     }
 
@@ -93,13 +93,13 @@ class BankServiceTest {
         BankInstitution bankInstitution1 = new BankInstitution("raifaizen", "ivan 2");
         BankAccount bankAccount = new BankAccount(owner, "20", bankInstitution, "odsjdspf", "BGN", 30, "CurrentAccount");
         BankAccount bankAccount2 = new BankAccount(owner2, "210", bankInstitution1, "odsjdspf1", "USD", 30, "CurrentAccount");
-        LocalDateTime dateTime = LocalDateTime.of(2023, 1, 1, 1, 10);
+        LocalDateTime dateTime = LocalDateTime.of(2028, 1, 1, 1, 10);
 
         //WHEN
         bankService.transferMoney(bankAccount, bankAccount2, 10, dateTime);
 
         //THEN
-        Assertions.assertEquals(18.98, bankAccount.getAvailableAmount());
+        Assertions.assertEquals(19.38, bankAccount.getAvailableAmount());
         Assertions.assertEquals(35.5, bankAccount2.getAvailableAmount());
     }
 
@@ -113,13 +113,13 @@ class BankServiceTest {
         BankInstitution bankInstitution1 = new BankInstitution("raifaizen", "ivan 2");
         BankAccount bankAccount = new BankAccount(owner, "20", bankInstitution, "odsjdspf", "BGN", 30, "CurrentAccount");
         BankAccount bankAccount2 = new BankAccount(owner2, "210", bankInstitution1, "odsjdspf1", "BGN", 30, "CurrentAccount");
-        LocalDateTime dateTime = LocalDateTime.of(2023, 1, 1, 1, 10);
+        LocalDateTime dateTime = LocalDateTime.of(2028, 1, 1, 1, 10);
 
         //WHEN
         bankService.transferMoney(bankAccount, bankAccount2, 10, dateTime);
 
         //THEN
-        Assertions.assertEquals(17.55, bankAccount.getAvailableAmount());
+        Assertions.assertEquals(17.95, bankAccount.getAvailableAmount());
         Assertions.assertEquals(40, bankAccount2.getAvailableAmount());
     }
 
@@ -133,13 +133,13 @@ class BankServiceTest {
         BankInstitution bankInstitution1 = new BankInstitution("raifaizen", "ivan 2");
         BankAccount bankAccount = new BankAccount(owner, "20", bankInstitution, "odsjdspf", "USD", 30, "CurrentAccount");
         BankAccount bankAccount2 = new BankAccount(owner2, "210", bankInstitution1, "odsjdspf1", "GBP", 30, "CurrentAccount");
-        LocalDateTime dateTime = LocalDateTime.of(2023, 1, 1, 1, 10);
+        LocalDateTime dateTime = LocalDateTime.of(2028, 1, 1, 1, 10);
 
         //WHEN
         bankService.transferMoney(bankAccount, bankAccount2, 10, dateTime);
 
         //THEN
-        Assertions.assertEquals(14.85, bankAccount.getAvailableAmount());
+        Assertions.assertEquals(15.25, bankAccount.getAvailableAmount());
         Assertions.assertEquals(38, bankAccount2.getAvailableAmount());
     }
 
@@ -168,7 +168,7 @@ class BankServiceTest {
         BankAccount bankAccount = new BankAccount(owner, "20", bankInstitution, "odsjdspf", "GBP", 300, "CurrentAccount");
         BankAccount bankAccount2 = new BankAccount(owner2, "210", bankInstitution1, "odsjdspf1", "USD", 30, "CurrentAccount");
         BankService bankService = new BankService();
-        LocalDateTime dateTime = LocalDateTime.of(2023, 1, 1, 1, 10);
+        LocalDateTime dateTime = LocalDateTime.of(2028, 1, 1, 1, 10);
 
         //WHEN
         bankService.transferMoney(bankAccount, bankAccount2, 10, dateTime);

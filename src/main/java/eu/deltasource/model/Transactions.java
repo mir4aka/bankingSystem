@@ -35,7 +35,6 @@ public class Transactions {
         this.targetIban = targetIban;
     }
 
-
     public void setSourceBank(BankInstitution sourceBank) {
         this.sourceBank = sourceBank;
     }
@@ -102,12 +101,17 @@ public class Transactions {
 
     /**
      * This method returns boolean if the params below are null in case if the transaction is a deposit or a withdraw, afterwards prints out the information.
+     *
      * @return
      */
     private boolean checkIfEmptyValuesExistInTheTransaction() {
         return targetBank == null && targetCurrency == null && targetIban == null;
     }
 
+    /**
+     * Checks if there are null values in the object, if there is, it returns a message.
+     * @return
+     */
     private String checkValuesOfTheTransactionObject() {
         if (checkIfEmptyValuesExistInTheTransaction()) {
             return String.format("""

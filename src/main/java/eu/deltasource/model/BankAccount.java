@@ -27,7 +27,6 @@ public class BankAccount {
         this.transactions = new Transactions();
         this.accountTypes = new ArrayList<>();
         this.accountTransactions = new LinkedList<>();
-
         setCurrency(currency);
         setAvailableAmount(availableAmount);
         setAccountType(accountType);
@@ -181,6 +180,10 @@ public class BankAccount {
         bankInstitution.addTransactions(transaction);
     }
 
+    private boolean isCurrencyValid(String currency) {
+        return currency.equals(Currency.BGN.getMessage()) || currency.equals(Currency.USD.getMessage()) || currency.equals(Currency.GBP.getMessage());
+    }
+
     public Owner getOwner() {
         return owner;
     }
@@ -211,11 +214,6 @@ public class BankAccount {
         }
         this.currency = currency;
     }
-
-    private boolean isCurrencyValid(String currency) {
-        return currency.equals(Currency.BGN.getMessage()) || currency.equals(Currency.USD.getMessage()) || currency.equals(Currency.GBP.getMessage());
-    }
-
 
     public double getAvailableAmount() {
         return availableAmount;
@@ -252,6 +250,6 @@ public class BankAccount {
     public String toString() {
         return String.format("Account name = " + "%s" + " " + "%s" +
                 "\nAvailableAmount = " + "%.2f" + " %s\n" +
-                "------------------------------\n", owner.getFirstName(), owner.getLastName(), this.availableAmount, getCurrency());
+                "------------------------------\n", owner.getFirstName(), owner.getLastName(), availableAmount, currency);
     }
 }

@@ -15,19 +15,27 @@ public class BankInstitution {
     private List<Transactions> transactions;
 
     public BankInstitution(String bankName, String bankAddress) {
-        this.transactions = new ArrayList<>();
         setBankName(bankName);
         setBankAddress(bankAddress);
+        this.transactions = new ArrayList<>();
         this.numberOfCustomers = new HashMap<>();
         this.priceList = new HashMap<>();
-        this.priceList.put("Tax to same bank", 1.2);
-        this.priceList.put("Tax to different bank", 1.55);
-        this.priceList.put("Exchange to same currency", 1.05);
-        this.priceList.put("Exchange to different currency", 1.65);
+        addsPricesToPriceListOfTheBank();
     }
 
     public void addAccountToNumberOfCustomers(String id, int numberOfAccounts) {
         numberOfCustomers.put(id, numberOfAccounts);
+    }
+
+    public void addTransactions(Transactions transaction) {
+        transactions.add(transaction);
+    }
+
+    private void addsPricesToPriceListOfTheBank() {
+        this.priceList.put("Tax to same bank", 1.2);
+        this.priceList.put("Tax to different bank", 1.55);
+        this.priceList.put("Exchange to same currency", 1.05);
+        this.priceList.put("Exchange to different currency", 1.65);
     }
 
     public String getBankName() {
@@ -48,16 +56,12 @@ public class BankInstitution {
         this.bankAddress = bankAddress;
     }
 
-    public Map<String, Double> getPriceList() {
-        return priceList;
-    }
-
-    public void addTransactions(Transactions transaction) {
-        transactions.add(transaction);
-    }
-
     public Map<String, Integer> getNumberOfCustomers() {
         return Collections.unmodifiableMap(numberOfCustomers);
+    }
+
+    public Map<String, Double> getPriceList() {
+        return priceList;
     }
 
     @Override

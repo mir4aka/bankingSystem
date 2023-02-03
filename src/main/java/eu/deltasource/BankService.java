@@ -137,6 +137,8 @@ public class BankService {
     private void transfer(BankAccount sourceAccount, BankAccount targetAccount, double amountToTransfer, LocalDateTime date) {
         checkValidations(sourceAccount, targetAccount, amountToTransfer);
 
+        checkIfTheDateTimeIsValid(date);
+
         double fees = calculateFees(sourceAccount, targetAccount);
 
         double exchangeRate = calculateExchangeRate(sourceAccount, targetAccount);
@@ -165,12 +167,6 @@ public class BankService {
         LocalDateTime timeOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
 
         updatingSourceAccountAndTargetAccountTransactions(sourceAccount, targetAccount, timeOfTransaction, amountToBeDepositedToTheTargetAccount, exchangeRate, amountToBeWithdrawnFromSourceAccount);
-    }
-
-    private void checkIfTheDateTimeIsValid(LocalDateTime date) {
-        if (date.isBefore(LocalDateTime.now())) {
-            throw new InvalidInputException("You cannot enter a transaction time before.");
-        }
     }
 
     /**
@@ -314,6 +310,12 @@ public class BankService {
 
         transaction.setTimestamp(timeOfTransaction);
         return transaction;
+    }
+
+    private void checkIfTheDateTimeIsValid(LocalDateTime date) {
+        if (date.isBefore(LocalDateTime.now())) {
+            throw new InvalidInputException("You cannot enter a transaction time before.");
+        }
     }
 
     /**
