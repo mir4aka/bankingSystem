@@ -6,14 +6,11 @@ import eu.deltasource.enums.ExceptionMessage;
 import eu.deltasource.enums.PriceList;
 import eu.deltasource.exception.*;
 import eu.deltasource.model.BankAccount;
-import eu.deltasource.model.Transactions;
+import eu.deltasource.model.Transaction;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-
-//TODO
-// read about; replace conditional with polymorphism
 
 /**
  * This is the bank service class which is called if a transaction is going to be fulfilled(deposit, withdraw,transfer).
@@ -27,7 +24,7 @@ public class BankService {
 
         account.setAvailableAmount(moneyAvailable);
 
-        Transactions transaction = updateDepositTransaction(account, amountToDeposit, date);
+        Transaction transaction = updateDepositTransaction(account, amountToDeposit, date);
 
         account.addTransaction(transaction);
     }
@@ -47,7 +44,7 @@ public class BankService {
 
         account.setAvailableAmount(moneyAvailable);
 
-        Transactions transaction = updateWithdrawTransaction(account, amountToWithdraw, date);
+        Transaction transaction = updateWithdrawTransaction(account, amountToWithdraw, date);
 
         account.addTransaction(transaction);
     }
@@ -73,9 +70,8 @@ public class BankService {
      * @param amount
      * @return
      */
-    private Transactions updateDepositTransaction(BankAccount account, double amount, LocalDateTime date) {
-        Transactions transaction = new Transactions();
-
+    private Transaction updateDepositTransaction(BankAccount account, double amount, LocalDateTime date) {
+        Transaction transaction = new Transaction();
         transaction.setSourceBank(account.getBankInstitution());
         transaction.setAmountDeposited(amount);
         transaction.setSourceCurrency(account.getCurrency());
@@ -97,9 +93,8 @@ public class BankService {
      * @param amount
      * @return
      */
-    private Transactions updateWithdrawTransaction(BankAccount account, double amount, LocalDateTime date) {
-        Transactions transaction = new Transactions();
-
+    private Transaction updateWithdrawTransaction(BankAccount account, double amount, LocalDateTime date) {
+        Transaction transaction = new Transaction();
         transaction.setSourceBank(account.getBankInstitution());
         transaction.setAmountWithdrawn(amount);
         transaction.setSourceCurrency(account.getCurrency());
@@ -124,11 +119,9 @@ public class BankService {
      */
     public void transferMoney(BankAccount sourceAccount, BankAccount targetAccount, double amountToTransfer, LocalDateTime date) {
         checkValidations(sourceAccount, targetAccount, amountToTransfer);
-
         checkIfTheDateTimeIsValid(date);
 
         double fees = calculateFees(sourceAccount, targetAccount);
-
         double exchangeRate = calculateExchangeRate(sourceAccount, targetAccount);
 
         String sourceAccountCurrency = sourceAccount.getCurrency();
@@ -143,11 +136,9 @@ public class BankService {
         checkIfSourceAccountHasEnoughMoneyToTransfer(sourceAccount, amountToTransfer, moneyInSourceAccount);
 
         moneyInSourceAccount -= amountToBeWithdrawnFromSourceAccount;
-
         sourceAccount.setAvailableAmount(Double.parseDouble(String.format("%.2f", moneyInSourceAccount)));
 
         moneyInTargetAccount += amountToBeDepositedToTheTargetAccount;
-
         targetAccount.setAvailableAmount(Double.parseDouble(String.format("%.2f", moneyInTargetAccount)));
 
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
@@ -155,7 +146,6 @@ public class BankService {
         LocalDateTime timeOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
 
         updatingSourceAccountAndTargetAccountTransactions(sourceAccount, targetAccount, timeOfTransaction, amountToBeDepositedToTheTargetAccount, exchangeRate, amountToBeWithdrawnFromSourceAccount);
-
     }
 
     /**
@@ -217,26 +207,26 @@ public class BankService {
     private void updatingSourceAccountAndTargetAccountTransactions(BankAccount sourceAccount, BankAccount targetAccount,
                                                                    LocalDateTime date, double amountToBeDepositedToTargetAccount,
                                                                    double exchangeRate, double amountToBeWithdrawnFromSourceAccount) {
-        List<Transactions> sourceAccountTransactions = sourceAccount.getAccountTransactions();
-        List<Transactions> targetAccountTransactions = targetAccount.getAccountTransactions();
+        List<Transaction> sourceAccountTransactions = sourceAccount.getAccountTransactions();
+        List<Transaction> targetAccountTransactions = targetAccount.getAccountTransactions();
 
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
         String format = dateTimeFormatter.format(date);
         LocalDateTime timeOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
 
         if (sourceAccountTransactions.isEmpty()) {
-            Transactions sourceAccountTransaction = updateSourceAccountTransactions(sourceAccount, targetAccount, amountToBeWithdrawnFromSourceAccount, exchangeRate, timeOfTransaction);
+            Transaction sourceAccountTransaction = updateSourceAccountTransactions(sourceAccount, targetAccount, amountToBeWithdrawnFromSourceAccount, exchangeRate, timeOfTransaction);
             sourceAccount.addTransaction(sourceAccountTransaction);
         } else {
-            Transactions newTransaction = updateSourceAccountTransactions(sourceAccount, targetAccount, amountToBeWithdrawnFromSourceAccount, exchangeRate, timeOfTransaction);
+            Transaction newTransaction = updateSourceAccountTransactions(sourceAccount, targetAccount, amountToBeWithdrawnFromSourceAccount, exchangeRate, timeOfTransaction);
             sourceAccount.addTransaction(newTransaction);
         }
 
         if (targetAccountTransactions.isEmpty()) {
-            Transactions targetAccountTransaction = updateTargetAccountTransactions(sourceAccount, targetAccount, amountToBeDepositedToTargetAccount, exchangeRate, timeOfTransaction);
+            Transaction targetAccountTransaction = updateTargetAccountTransactions(sourceAccount, targetAccount, amountToBeDepositedToTargetAccount, exchangeRate, timeOfTransaction);
             targetAccount.addTransaction(targetAccountTransaction);
         } else {
-            Transactions newTransaction = updateTargetAccountTransactions(sourceAccount, targetAccount, amountToBeDepositedToTargetAccount, exchangeRate, timeOfTransaction);
+            Transaction newTransaction = updateTargetAccountTransactions(sourceAccount, targetAccount, amountToBeDepositedToTargetAccount, exchangeRate, timeOfTransaction);
             targetAccount.addTransaction(newTransaction);
         }
     }
@@ -251,9 +241,9 @@ public class BankService {
      * @param date
      * @return
      */
-    private Transactions updateSourceAccountTransactions(BankAccount sourceAccount, BankAccount targetAccount,
-                                                         double amount, double exchangeRate, LocalDateTime date) {
-        Transactions transaction = new Transactions();
+    private Transaction updateSourceAccountTransactions(BankAccount sourceAccount, BankAccount targetAccount,
+                                                        double amount, double exchangeRate, LocalDateTime date) {
+        Transaction transaction = new Transaction();
         transaction.setExchangeRate(exchangeRate);
         transaction.setSourceBank(sourceAccount.getBankInstitution());
         transaction.setTargetBank(targetAccount.getBankInstitution());
@@ -281,9 +271,9 @@ public class BankService {
      * @param date
      * @return
      */
-    private Transactions updateTargetAccountTransactions(BankAccount sourceAccount, BankAccount targetAccount,
-                                                         double amount, double exchangeRate, LocalDateTime date) {
-        Transactions transaction = new Transactions();
+    private Transaction updateTargetAccountTransactions(BankAccount sourceAccount, BankAccount targetAccount,
+                                                        double amount, double exchangeRate, LocalDateTime date) {
+        Transaction transaction = new Transaction();
         transaction.setExchangeRate(exchangeRate);
         transaction.setSourceBank(sourceAccount.getBankInstitution());
         transaction.setTargetBank(targetAccount.getBankInstitution());

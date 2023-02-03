@@ -5,23 +5,22 @@ import eu.deltasource.exception.NotAllowedToTransferToTheSameBankAccountExceptio
 import eu.deltasource.exception.TransfersAllowedBetweenCurrentAccountsException;
 import eu.deltasource.model.BankAccount;
 import eu.deltasource.model.BankInstitution;
-import eu.deltasource.model.Owner;
+import eu.deltasource.model.BankAccountOwner;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class RunApplication {
     public void run() {
 
-        Owner niki4 = new Owner("nikic", "Go5ov");
-        Owner mirki4 = new Owner("mirki4", "Go5sov");
+        BankAccountOwner niki4 = new BankAccountOwner("nikic", "Go5ov", "02");
+        BankAccountOwner mirki4 = new BankAccountOwner("mirki4", "Go5sov", "12");
 
         BankInstitution dsk = new BankInstitution("dsk", "sdf");
         BankInstitution raifaizen = new BankInstitution("raifaizen", "sdfewr");
 
-        BankAccount nikic = new BankAccount(niki4, "02", dsk, "frewer", "GBP", 30, "CurrentAccount", "SavingsAccount");
+        BankAccount nikic = new BankAccount(niki4, dsk, "frewer", "GBP", 30, "CurrentAccount", "SavingsAccount");
 
-        BankAccount mirkic = new BankAccount(mirki4, "022", raifaizen, "freweer", "USD", 30, "CurrentAccount");
+        BankAccount mirkic = new BankAccount(mirki4, raifaizen, "freweer", "USD", 30, "CurrentAccount");
 
         BankService bankService = new BankService();
         try {

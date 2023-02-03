@@ -1,27 +1,23 @@
 package eu.deltasource;
 
-import eu.deltasource.exception.AccountTypeCannotBeDifferentFromCurrentAndSavingsException;
 import eu.deltasource.exception.NotEnoughMoneyToWithdrawException;
 import eu.deltasource.model.BankAccount;
 import eu.deltasource.model.BankInstitution;
-import eu.deltasource.model.Owner;
+import eu.deltasource.model.BankAccountOwner;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class BankServiceTest {
 
     @Test
     void testIfTheAvailableAmountInTheAccountIncreases() {
         //GIVEN
-        Owner owner = new Owner("Ivan", "Ivanov");
+        BankAccountOwner owner = new BankAccountOwner("Ivan", "Ivanov", "02");
         BankService bankService = new BankService();
         BankInstitution bankInstitution = new BankInstitution("dsk", "ivan 2");
-        BankAccount bankAccount = new BankAccount(owner, "20", bankInstitution, "odsjdspf", "GBP", 30, "CurrentAccount");
+        BankAccount bankAccount = new BankAccount(owner, bankInstitution, "odsjdspf", "GBP", 30, "CurrentAccount");
         LocalDateTime dateTime = LocalDateTime.of(2028, 1, 1, 1, 10);
 
 
@@ -35,10 +31,10 @@ class BankServiceTest {
     @Test
     void testIfTheAvailableAmountInTheAccountDecreases() {
         //GIVEN
-        Owner owner = new Owner("Ivan", "Ivanov");
+        BankAccountOwner owner = new BankAccountOwner("Ivan", "Ivanov", "02");
         BankService bankService = new BankService();
         BankInstitution bankInstitution = new BankInstitution("dsk", "ivan 2");
-        BankAccount bankAccount = new BankAccount(owner, "20", bankInstitution, "odsjdspf", "GBP", 30, "CurrentAccount");
+        BankAccount bankAccount = new BankAccount(owner,  bankInstitution, "odsjdspf", "GBP", 30, "CurrentAccount");
         LocalDateTime dateTime = LocalDateTime.of(2028, 1, 1, 1, 10);
 
         //WHEN
@@ -49,12 +45,12 @@ class BankServiceTest {
     }
 
     @Test
-    void testToWithdrawMoneyIfAccountBalanceIsNotEnough() {
+    void testToWithdrawMoneyIfAccountBalanceIsNotEnoughShouldThrowAnException() {
         //GIVEN
-        Owner owner = new Owner("Ivan", "Ivanov");
+        BankAccountOwner owner = new BankAccountOwner("Ivan", "Ivanov", "012");
         BankService bankService = new BankService();
         BankInstitution bankInstitution = new BankInstitution("dsk", "ivan 2");
-        BankAccount bankAccount = new BankAccount(owner, "20", bankInstitution, "odsjdspf", "GBP", 30, "CurrentAccount");
+        BankAccount bankAccount = new BankAccount(owner,  bankInstitution, "odsjdspf", "GBP", 30, "CurrentAccount");
         LocalDateTime dateTime = LocalDateTime.of(2028, 1, 1, 1, 10);
 
         //THEN
@@ -66,13 +62,13 @@ class BankServiceTest {
     @Test
     void testIfTheTransferMethodUpdatesBothAccountsBalanceFromGBPtoUSD() {
         //GIVEN
-        Owner owner = new Owner("Ivan", "Ivanov");
-        Owner owner2 = new Owner("Gergi", "petrov");
+        BankAccountOwner owner = new BankAccountOwner("Ivan", "Ivanov", "02");
+        BankAccountOwner owner2 = new BankAccountOwner("Gergi", "petrov", "012");
         BankService bankService = new BankService();
         BankInstitution bankInstitution = new BankInstitution("dsk", "ivan 2");
         BankInstitution bankInstitution1 = new BankInstitution("raifaizen", "ivan 2");
-        BankAccount bankAccount = new BankAccount(owner, "20", bankInstitution, "odsjdspf", "GBP", 30, "CurrentAccount");
-        BankAccount bankAccount2 = new BankAccount(owner2, "210", bankInstitution1, "odsjdspf1", "USD", 30, "CurrentAccount");
+        BankAccount bankAccount = new BankAccount(owner,  bankInstitution, "odsjdspf", "GBP", 30, "CurrentAccount");
+        BankAccount bankAccount2 = new BankAccount(owner2,  bankInstitution1, "odsjdspf1", "USD", 30, "CurrentAccount");
         LocalDateTime dateTime = LocalDateTime.of(2028, 1, 1, 1, 10);
 
         //WHEN
@@ -86,13 +82,13 @@ class BankServiceTest {
     @Test
     void testIfTheTransferMethodUpdatesBothAccountsBalanceFromBGNtoUSD() {
         //GIVEN
-        Owner owner = new Owner("Ivan", "Ivanov");
-        Owner owner2 = new Owner("Gergi", "petrov");
+        BankAccountOwner owner = new BankAccountOwner("Ivan", "Ivanov", "02");
+        BankAccountOwner owner2 = new BankAccountOwner("Gergi", "petrov", "022");
         BankService bankService = new BankService();
         BankInstitution bankInstitution = new BankInstitution("dsk", "ivan 2");
         BankInstitution bankInstitution1 = new BankInstitution("raifaizen", "ivan 2");
-        BankAccount bankAccount = new BankAccount(owner, "20", bankInstitution, "odsjdspf", "BGN", 30, "CurrentAccount");
-        BankAccount bankAccount2 = new BankAccount(owner2, "210", bankInstitution1, "odsjdspf1", "USD", 30, "CurrentAccount");
+        BankAccount bankAccount = new BankAccount(owner,  bankInstitution, "odsjdspf", "BGN", 30, "CurrentAccount");
+        BankAccount bankAccount2 = new BankAccount(owner2,  bankInstitution1, "odsjdspf1", "USD", 30, "CurrentAccount");
         LocalDateTime dateTime = LocalDateTime.of(2028, 1, 1, 1, 10);
 
         //WHEN
@@ -106,13 +102,13 @@ class BankServiceTest {
     @Test
     void testIfTheTransferMethodUpdatesBothAccountsBalanceFromBGNtoBGN() {
         //GIVEN
-        Owner owner = new Owner("Ivan", "Ivanov");
-        Owner owner2 = new Owner("Gergi", "petrov");
+        BankAccountOwner owner = new BankAccountOwner("Ivan", "Ivanov", "02");
+        BankAccountOwner owner2 = new BankAccountOwner("Gergi", "petrov", "022");
         BankService bankService = new BankService();
         BankInstitution bankInstitution = new BankInstitution("dsk", "ivan 2");
         BankInstitution bankInstitution1 = new BankInstitution("raifaizen", "ivan 2");
-        BankAccount bankAccount = new BankAccount(owner, "20", bankInstitution, "odsjdspf", "BGN", 30, "CurrentAccount");
-        BankAccount bankAccount2 = new BankAccount(owner2, "210", bankInstitution1, "odsjdspf1", "BGN", 30, "CurrentAccount");
+        BankAccount bankAccount = new BankAccount(owner,  bankInstitution, "odsjdspf", "BGN", 30, "CurrentAccount");
+        BankAccount bankAccount2 = new BankAccount(owner2,  bankInstitution1, "odsjdspf1", "BGN", 30, "CurrentAccount");
         LocalDateTime dateTime = LocalDateTime.of(2028, 1, 1, 1, 10);
 
         //WHEN
@@ -126,13 +122,13 @@ class BankServiceTest {
     @Test
     void testIfTheTransferMethodUpdatesBothAccountsBalanceFromUSDtoGBP() {
         //GIVEN
-        Owner owner = new Owner("Ivan", "Ivanov");
-        Owner owner2 = new Owner("Gergi", "petrov");
+        BankAccountOwner owner = new BankAccountOwner("Ivan", "Ivanov", "02");
+        BankAccountOwner owner2 = new BankAccountOwner("Gergi", "petrov", "022");
         BankService bankService = new BankService();
         BankInstitution bankInstitution = new BankInstitution("dsk", "ivan 2");
         BankInstitution bankInstitution1 = new BankInstitution("raifaizen", "ivan 2");
-        BankAccount bankAccount = new BankAccount(owner, "20", bankInstitution, "odsjdspf", "USD", 30, "CurrentAccount");
-        BankAccount bankAccount2 = new BankAccount(owner2, "210", bankInstitution1, "odsjdspf1", "GBP", 30, "CurrentAccount");
+        BankAccount bankAccount = new BankAccount(owner,  bankInstitution, "odsjdspf", "USD", 30, "CurrentAccount");
+        BankAccount bankAccount2 = new BankAccount(owner2,  bankInstitution1, "odsjdspf1", "GBP", 30, "CurrentAccount");
         LocalDateTime dateTime = LocalDateTime.of(2028, 1, 1, 1, 10);
 
         //WHEN
@@ -146,12 +142,12 @@ class BankServiceTest {
     @Test
     void testIfTheBalanceOfTheAccountIsAsSetInTheObject() {
         //GIVEN
-        Owner owner = new Owner("Ivan", "Ivanov");
-        Owner owner2 = new Owner("Gergi", "petrov");
+        BankAccountOwner owner = new BankAccountOwner("Ivan", "Ivanov", "02");
+        BankAccountOwner owner2 = new BankAccountOwner("Gergi", "petrov", "022");
         BankInstitution bankInstitution = new BankInstitution("dsk", "ivan 2");
         BankInstitution bankInstitution1 = new BankInstitution("raifaizen", "ivan 2");
-        BankAccount bankAccount = new BankAccount(owner, "20", bankInstitution, "odsjdspf", "GBP", 30, "CurrentAccount");
-        BankAccount bankAccount2 = new BankAccount(owner2, "210", bankInstitution1, "odsjdspf1", "USD", 30, "CurrentAccount");
+        BankAccount bankAccount = new BankAccount(owner,  bankInstitution, "odsjdspf", "GBP", 30, "CurrentAccount");
+        BankAccount bankAccount2 = new BankAccount(owner2,  bankInstitution1, "odsjdspf1", "USD", 30, "CurrentAccount");
 
         //THEN
         Assertions.assertEquals(30, bankAccount.getAvailableAmount());
@@ -161,12 +157,12 @@ class BankServiceTest {
     @Test
     void testIfTheTransactionsAreBeingStoredCorrectly() {
         //GIVEN
-        Owner owner = new Owner("Ivan", "Ivanov");
-        Owner owner2 = new Owner("Gergi", "petrov");
+        BankAccountOwner owner = new BankAccountOwner("Ivan", "Ivanov", "02");
+        BankAccountOwner owner2 = new BankAccountOwner("Gergi", "petrov", "022");
         BankInstitution bankInstitution = new BankInstitution("dsk", "ivan 2");
         BankInstitution bankInstitution1 = new BankInstitution("raifaizen", "ivan 2");
-        BankAccount bankAccount = new BankAccount(owner, "20", bankInstitution, "odsjdspf", "GBP", 300, "CurrentAccount");
-        BankAccount bankAccount2 = new BankAccount(owner2, "210", bankInstitution1, "odsjdspf1", "USD", 30, "CurrentAccount");
+        BankAccount bankAccount = new BankAccount(owner,  bankInstitution, "odsjdspf", "GBP", 300, "CurrentAccount");
+        BankAccount bankAccount2 = new BankAccount(owner2,  bankInstitution1, "odsjdspf1", "USD", 30, "CurrentAccount");
         BankService bankService = new BankService();
         LocalDateTime dateTime = LocalDateTime.of(2028, 1, 1, 1, 10);
 

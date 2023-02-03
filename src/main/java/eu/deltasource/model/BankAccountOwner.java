@@ -3,15 +3,20 @@ package eu.deltasource.model;
 import eu.deltasource.enums.ExceptionMessage;
 import eu.deltasource.exception.InvalidInputException;
 
-public class Owner {
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+public class BankAccountOwner {
 
     private String firstName;
     private String lastName;
     private String id;
 
-    public Owner(String firstName, String lastName) {
+    public BankAccountOwner(String firstName, String lastName, String id) {
         setFirstName(firstName);
         setLastName(lastName);
+        setId(id);
     }
 
     public String getFirstName() {
@@ -44,7 +49,13 @@ public class Owner {
         if (id.isBlank()) {
             throw new InvalidInputException(ExceptionMessage.ID_INVALID.getMessage());
         }
+
+        if (BankInstitution.getBankAccountOwners().contains(id)) {
+            throw new InvalidInputException("An account in this bank already exists with this id: " + id);
+        }
+
         this.id = id;
+        BankInstitution.addBankAccountToBank(id);
     }
 
     @Override

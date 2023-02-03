@@ -10,23 +10,18 @@ import java.util.*;
 
 public class BankAccount {
 
-    private Owner owner;
+    private BankAccountOwner owner;
     private String iban;
     private String currency;
     private double availableAmount;
     private BankInstitution bankInstitution;
-    private Transactions transactions;
-    private List<AccountType> accountTypes;
-    private List<Transactions> accountTransactions;
+    private List<AccountType> accountTypes = new ArrayList<>();
+    private List<Transaction> accountTransactions = new LinkedList<>();
 
-    public BankAccount(Owner owner, String ownerId, BankInstitution bankInstitution, String iban, String currency, double availableAmount, String... accountType) {
+    public BankAccount(BankAccountOwner owner, BankInstitution bankInstitution, String iban, String currency, double availableAmount, String... accountType) {
         this.owner = owner;
-        this.owner.setId(ownerId);
         this.bankInstitution = bankInstitution;
         this.iban = iban;
-        this.transactions = new Transactions();
-        this.accountTypes = new ArrayList<>();
-        this.accountTransactions = new LinkedList<>();
         setCurrency(currency);
         setAvailableAmount(availableAmount);
         setAccountType(accountType);
@@ -53,7 +48,7 @@ public class BankAccount {
      */
     public String allTransactions() {
         StringBuilder transactions = new StringBuilder();
-        List<Transactions> accountTransactions = getAccountTransactions();
+        List<Transaction> accountTransactions = getAccountTransactions();
 
         if (accountTransactions.isEmpty()) {
             transactions.append("There are no transactions for the account of ").append(owner.getFirstName()).append(" ").append(owner.getLastName()).append(System.lineSeparator());
@@ -64,7 +59,7 @@ public class BankAccount {
 
         int numberOfTransactions = 1;
         for (int i = accountTransactions.size() - 1; i >= 0; i--) {
-            Transactions currentTransaction = accountTransactions.get(i);
+            Transaction currentTransaction = accountTransactions.get(i);
             transactions.append(String.format("Transaction #%d\n", numberOfTransactions++));
             transactions.append(currentTransaction).append("---------------------------------").append(System.lineSeparator());
         }
@@ -81,7 +76,7 @@ public class BankAccount {
      */
     public void prepareBankStatement(LocalDateTime start, LocalDateTime end) {
 
-        for (Transactions accountTransaction : accountTransactions) {
+        for (Transaction accountTransaction : accountTransactions) {
             if (accountTransaction.getTimestamp().isBefore(start) || accountTransaction.getTimestamp().isAfter(end)) {
                 String message = String.format("No transactions for the account of %s %s for the given period of time.", owner.getFirstName(), owner.getLastName());
                 throw new NoTransactionsOfTheGivenAccountException(message);
@@ -89,7 +84,7 @@ public class BankAccount {
         }
 
         printAccountInformation(start, end);
-        for (Transactions transaction : getAccountTransactions()) {
+        for (Transaction transaction : getAccountTransactions()) {
             printOutInformationDependingOnTheTransactionType(transaction);
         }
     }
@@ -118,7 +113,7 @@ public class BankAccount {
      *
      * @param transaction
      */
-    private void printOutInformationDependingOnTheTransactionType(Transactions transaction) {
+    private void printOutInformationDependingOnTheTransactionType(Transaction transaction) {
         int dayOfMonth = transaction.getTimestamp().getDayOfMonth();
         int month = transaction.getTimestamp().getMonthValue();
         int year = transaction.getTimestamp().getYear();
@@ -175,16 +170,16 @@ public class BankAccount {
         availableAmount -= amount;
     }
 
-    public void addTransaction(Transactions transaction) {
+    public void addTransaction(Transaction transaction) {
         accountTransactions.add(transaction);
-        bankInstitution.addTransactions(transaction);
+        bankInstitution.addTransaction(transaction);
     }
 
     private boolean isCurrencyValid(String currency) {
         return currency.equals(Currency.BGN.getMessage()) || currency.equals(Currency.USD.getMessage()) || currency.equals(Currency.GBP.getMessage());
     }
 
-    public Owner getOwner() {
+    public BankAccountOwner getOwner() {
         return owner;
     }
 
@@ -226,7 +221,7 @@ public class BankAccount {
         this.availableAmount = availableAmount;
     }
 
-    public List<Transactions> getAccountTransactions() {
+    public List<Transaction> getAccountTransactions() {
         return Collections.unmodifiableList(accountTransactions);
     }
 

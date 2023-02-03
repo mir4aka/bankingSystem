@@ -10,17 +10,14 @@ public class BankInstitution {
 
     private String bankName;
     private String bankAddress;
-    private Map<String, Integer> numberOfCustomers;
-    private Map<String, Double> priceList;
-
-    private List<Transactions> transactions;
+    private Map<String, Integer> numberOfCustomers = new HashMap<>();
+    private Map<String, Double> priceList = new HashMap<>();
+    private List<Transaction> transactions = new ArrayList<>();
+    private static Set<String> bankAccountOwners = new HashSet<>();
 
     public BankInstitution(String bankName, String bankAddress) {
         setBankName(bankName);
         setBankAddress(bankAddress);
-        this.transactions = new ArrayList<>();
-        this.numberOfCustomers = new HashMap<>();
-        this.priceList = new HashMap<>();
         addsPricesToPriceListOfTheBank();
     }
 
@@ -28,7 +25,7 @@ public class BankInstitution {
         numberOfCustomers.put(id, numberOfAccounts);
     }
 
-    public void addTransactions(Transactions transaction) {
+    public void addTransaction(Transaction transaction) {
         transactions.add(transaction);
     }
 
@@ -63,6 +60,14 @@ public class BankInstitution {
 
     public Map<String, Double> getPriceList() {
         return priceList;
+    }
+
+    public static Set<String> getBankAccountOwners() {
+        return Collections.unmodifiableSet(bankAccountOwners);
+    }
+
+    public static void addBankAccountToBank(String id) {
+        bankAccountOwners.add(id);
     }
 
     @Override

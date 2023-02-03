@@ -1,25 +1,24 @@
 package eu.deltasource.model;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
  * This is a model of transaction and keeps information about a transaction such as amount, time of the transaction, currency, etc....
  */
-public class Transactions {
+public class Transaction {
     private String sourceIban;
     private String targetIban;
-    private BankInstitution sourceBank;
-    private BankInstitution targetBank;
+    private String sourceCurrency;
+    private String targetCurrency;
     private double amountTransferred;
     private double amountDeposited;
     private double amountWithdrawn;
-    private String sourceCurrency;
-    private String targetCurrency;
     private double exchangeRate;
+    private BankInstitution sourceBank;
+    private BankInstitution targetBank;
     private LocalDateTime timestamp;
 
-    public Transactions(String sourceIban, String targetIban, BankInstitution sourceBank, BankInstitution targetBank, double amountTransferred, double amountDeposited, double amountWithdrawn, String sourceCurrency, String targetCurrency, double exchangeRate, LocalDateTime timestamp) {
+    public Transaction(String sourceIban, String targetIban, BankInstitution sourceBank, BankInstitution targetBank, double amountTransferred, double amountDeposited, double amountWithdrawn, String sourceCurrency, String targetCurrency, double exchangeRate, LocalDateTime timestamp) {
         this.sourceIban = sourceIban;
         this.targetIban = targetIban;
         this.sourceBank = sourceBank;
@@ -33,7 +32,7 @@ public class Transactions {
         this.timestamp = timestamp;
     }
 
-    public Transactions() {
+    public Transaction() {
     }
 
     public String getSourceIban() {
@@ -117,19 +116,15 @@ public class Transactions {
     }
 
     /**
-     * This method returns boolean if the params below are null in case if the transaction is a deposit or a withdraw, afterwards prints out the information.
+     * This method returns boolean if the params below are null in case the transaction is a deposit or a withdraw, afterwards prints out the information.
      *
-     * @return
      */
     private boolean checkIfEmptyValuesExistInTheTransaction() {
         return targetBank == null && targetCurrency == null && targetIban == null;
     }
 
-    /**
-     * Checks if there are null values in the object, if there is, it returns a message.
-     * @return
-     */
-    private String checkValuesOfTheTransactionObject() {
+    @Override
+    public String toString() {
         if (checkIfEmptyValuesExistInTheTransaction()) {
             return String.format("""
                     Iban: %s
@@ -155,10 +150,6 @@ public class Transactions {
                 Exchange rate: %.2f
                 Time of transaction: %s
                 """, sourceIban, targetIban, sourceBank, targetBank, amountTransferred, amountDeposited, amountWithdrawn, sourceCurrency, targetCurrency, exchangeRate, timestamp);
-    }
 
-    @Override
-    public String toString() {
-        return checkValuesOfTheTransactionObject();
     }
 }
