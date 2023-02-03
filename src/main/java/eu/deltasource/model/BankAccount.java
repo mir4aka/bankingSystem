@@ -34,6 +34,10 @@ public class BankAccount {
         addsAccountToBank();
     }
 
+    /**
+     * This method is called when a new account is ot be created in the bank, if the account already exists, an exception will be thrown, otherwise, the account
+     * is added to the bank incrementing the number of customers of the bank based on the account owner's id.
+     */
     private void addsAccountToBank() {
         Map<String, Integer> numberOfCustomers = bankInstitution.getNumberOfCustomers();
 
@@ -43,6 +47,11 @@ public class BankAccount {
         getBankInstitution().addAccountToNumberOfCustomers(owner.getId(), 1);
     }
 
+    /**
+     * Prints out the transactions of the account, if there are any, otherwise, returns a message that there are no transactions of the given account.
+     *
+     * @return
+     */
     public String allTransactions() {
         StringBuilder transactions = new StringBuilder();
         List<Transactions> accountTransactions = getAccountTransactions();
@@ -64,10 +73,20 @@ public class BankAccount {
         return transactions.toString();
     }
 
+    /**
+     * Prepares bank statements based on the given time range, if there are transactions in this time range, they will be printed out, otherwise, there won't be
+     * any transactions printed.
+     *
+     * @param start
+     * @param end
+     */
     public void prepareBankStatement(LocalDateTime start, LocalDateTime end) {
 
-        if (accountTransactions.isEmpty()) {
-            System.out.println("No transactions for the account of " + owner.getFirstName() + " " + owner.getLastName() + " for the given period of time.");
+        for (Transactions accountTransaction : accountTransactions) {
+            if (accountTransaction.getTimestamp().isBefore(start) || accountTransaction.getTimestamp().isAfter(end)) {
+                String message = String.format("No transactions for the account of %s %s for the given period of time.", owner.getFirstName(), owner.getLastName());
+                throw new NoTransactionsOfTheGivenAccountException(message);
+            }
         }
 
         printAccountInformation(start, end);
@@ -157,6 +176,11 @@ public class BankAccount {
         availableAmount -= amount;
     }
 
+    public void addTransaction(Transactions transaction) {
+        accountTransactions.add(transaction);
+        bankInstitution.addTransactions(transaction);
+    }
+
     public Owner getOwner() {
         return owner;
     }
@@ -206,11 +230,6 @@ public class BankAccount {
 
     public List<Transactions> getAccountTransactions() {
         return Collections.unmodifiableList(accountTransactions);
-    }
-
-    public void addTransaction(Transactions transaction) {
-        accountTransactions.add(transaction);
-        bankInstitution.addTransactions(transaction);
     }
 
     public List<AccountType> getAccountTypes() {

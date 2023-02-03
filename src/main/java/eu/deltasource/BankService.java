@@ -27,9 +27,16 @@ public class BankService {
 
         account.setAvailableAmount(moneyAvailable);
 
-        Transactions transaction = updateDepositTransaction(account, amountToDeposit);
+        Transactions transaction = updateDepositTransaction(account, amountToDeposit, date);
 
         account.addTransaction(transaction);
+    }
+
+    private double increaseTheAmountOfMoneyInTheAccount(BankAccount account, double amountToDeposit) {
+        if (account.getAccountTypes().contains(AccountType.CURRENT_ACCOUNT) || account.getAccountTypes().contains(AccountType.SAVINGS_ACCOUNT)) {
+            account.addAmount(amountToDeposit);
+        }
+        return account.getAvailableAmount();
     }
 
     public void withdrawMoneyFromAccount(BankAccount account, double amountToWithdraw, LocalDateTime date) {
@@ -40,19 +47,75 @@ public class BankService {
 
         account.setAvailableAmount(moneyAvailable);
 
-        Transactions transaction = updateWithdrawTransaction(account, amountToWithdraw);
+        Transactions transaction = updateWithdrawTransaction(account, amountToWithdraw, date);
 
         account.addTransaction(transaction);
     }
 
-    private void checkIfTheDateTimeIsValid(LocalDateTime date) {
-        if (date.isBefore(LocalDateTime.now())) {
-            throw new InvalidInputException("You cannot enter a transaction time before.");
+    private double decreaseTheAmountOfMoneyInTheAccount(BankAccount account, double amountToWithdraw) {
+        double moneyAvailable = account.getAvailableAmount();
+
+        if (moneyAvailable < amountToWithdraw) {
+            throw new NotEnoughMoneyToWithdrawException(ExceptionMessage.NOT_ENOUGH_MONEY.getMessage());
         }
+
+        if (account.getAccountTypes().contains(AccountType.CURRENT_ACCOUNT) || account.getAccountTypes().contains(AccountType.SAVINGS_ACCOUNT)) {
+            account.removeAmount(amountToWithdraw);
+
+        }
+        return account.getAvailableAmount();
     }
 
     /**
-     * The method below takes care of the transaction between two bank accounts
+     * Takes care of the deposit transaction and adds the transaction to the collection of transactions of the account and the bank.
+     *
+     * @param account
+     * @param amount
+     * @return
+     */
+    private Transactions updateDepositTransaction(BankAccount account, double amount, LocalDateTime date) {
+        Transactions transaction = new Transactions();
+
+        transaction.setSourceBank(account.getBankInstitution());
+        transaction.setAmountDeposited(amount);
+        transaction.setSourceCurrency(account.getCurrency());
+        transaction.setSourceIban(account.getIban());
+
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
+        String format = dateTimeFormatter.format(date);
+        LocalDateTime timeOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
+
+        transaction.setTimestamp(timeOfTransaction);
+
+        return transaction;
+    }
+
+    /**
+     * Takes care of the withdraw transaction and adds the transaction to the collection of transactions of the account and the bank.
+     *
+     * @param account
+     * @param amount
+     * @return
+     */
+    private Transactions updateWithdrawTransaction(BankAccount account, double amount, LocalDateTime date) {
+        Transactions transaction = new Transactions();
+
+        transaction.setSourceBank(account.getBankInstitution());
+        transaction.setAmountWithdrawn(amount);
+        transaction.setSourceCurrency(account.getCurrency());
+        transaction.setSourceIban(account.getIban());
+
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
+        String format = dateTimeFormatter.format(date);
+        LocalDateTime timeOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
+
+        transaction.setTimestamp(timeOfTransaction);
+
+        return transaction;
+    }
+
+    /**
+     * Takes care of the transactions between two bank accounts
      *
      * @param sourceAccount
      * @param targetAccount
@@ -72,7 +135,7 @@ public class BankService {
      * @param date
      */
     private void transfer(BankAccount sourceAccount, BankAccount targetAccount, double amountToTransfer, LocalDateTime date) {
-        checkValidAccounts(sourceAccount, targetAccount, amountToTransfer);
+        checkValidations(sourceAccount, targetAccount, amountToTransfer);
 
         double fees = calculateFees(sourceAccount, targetAccount);
 
@@ -98,35 +161,20 @@ public class BankService {
         targetAccount.setAvailableAmount(Double.parseDouble(String.format("%.2f", moneyInTargetAccount)));
 
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
-        String format = dateTimeFormatter.format(LocalDateTime.now());
+        String format = dateTimeFormatter.format(date);
         LocalDateTime timeOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
 
         updatingSourceAccountAndTargetAccountTransactions(sourceAccount, targetAccount, timeOfTransaction, amountToBeDepositedToTheTargetAccount, exchangeRate, amountToBeWithdrawnFromSourceAccount);
     }
 
-    private double increaseTheAmountOfMoneyInTheAccount(BankAccount account, double amountToDeposit) {
-        if (account.getAccountTypes().contains(AccountType.CURRENT_ACCOUNT) || account.getAccountTypes().contains(AccountType.SAVINGS_ACCOUNT)) {
-            account.addAmount(amountToDeposit);
+    private void checkIfTheDateTimeIsValid(LocalDateTime date) {
+        if (date.isBefore(LocalDateTime.now())) {
+            throw new InvalidInputException("You cannot enter a transaction time before.");
         }
-        return account.getAvailableAmount();
-    }
-
-    private double decreaseTheAmountOfMoneyInTheAccount(BankAccount account, double amountToWithdraw) {
-        double moneyAvailable = account.getAvailableAmount();
-
-        if (moneyAvailable < amountToWithdraw) {
-            throw new NotEnoughMoneyToWithdrawException(ExceptionMessage.NOT_ENOUGH_MONEY.getMessage());
-        }
-
-        if (account.getAccountTypes().contains(AccountType.CURRENT_ACCOUNT) || account.getAccountTypes().contains(AccountType.SAVINGS_ACCOUNT)) {
-            account.removeAmount(amountToWithdraw);
-
-        }
-        return account.getAvailableAmount();
     }
 
     /**
-     * This method calculates the fee of the amount to be transferred whether it's to a different bank from the source bank or not and returns the value.
+     * Calculates the fee of the amount to be transferred whether it's to a different bank from the source bank or not and returns the result.
      *
      * @param sourceAccount
      * @param targetAccount
@@ -144,7 +192,7 @@ public class BankService {
     }
 
     /**
-     * This method calculates the exchange rate between banks and returns the value.
+     * Calculates the exchange rate between banks and returns the result.
      *
      * @param sourceAccount
      * @param targetAccount
@@ -172,8 +220,7 @@ public class BankService {
     }
 
     /**
-     * This method creates a new transaction which is being updated on both accounts - source and target.
-     * This way I can keep up with the transactions and store them in a collection.
+     * Creates a new transaction which is being updated on both accounts - source and target.
      *
      * @param sourceAccount
      * @param targetAccount
@@ -190,75 +237,27 @@ public class BankService {
 
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
         String format = dateTimeFormatter.format(date);
-        LocalDateTime dateOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
+        LocalDateTime timeOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
 
         if (sourceAccountTransactions.isEmpty()) {
-            Transactions sourceAccountTransaction = updateSourceAccountTransactions(sourceAccount, targetAccount, amountToBeWithdrawnFromSourceAccount, exchangeRate, dateOfTransaction);
+            Transactions sourceAccountTransaction = updateSourceAccountTransactions(sourceAccount, targetAccount, amountToBeWithdrawnFromSourceAccount, exchangeRate, timeOfTransaction);
             sourceAccount.addTransaction(sourceAccountTransaction);
         } else {
-            Transactions newTransaction = updateSourceAccountTransactions(sourceAccount, targetAccount, amountToBeWithdrawnFromSourceAccount, exchangeRate, dateOfTransaction);
+            Transactions newTransaction = updateSourceAccountTransactions(sourceAccount, targetAccount, amountToBeWithdrawnFromSourceAccount, exchangeRate, timeOfTransaction);
             sourceAccount.addTransaction(newTransaction);
         }
 
         if (targetAccountTransactions.isEmpty()) {
-            Transactions targetAccountTransaction = updateTargetAccountTransactions(sourceAccount, targetAccount, amountToBeDepositedToTargetAccount, exchangeRate, dateOfTransaction);
+            Transactions targetAccountTransaction = updateTargetAccountTransactions(sourceAccount, targetAccount, amountToBeDepositedToTargetAccount, exchangeRate, timeOfTransaction);
             targetAccount.addTransaction(targetAccountTransaction);
         } else {
-            Transactions newTransaction = updateTargetAccountTransactions(sourceAccount, targetAccount, amountToBeDepositedToTargetAccount, exchangeRate, dateOfTransaction);
+            Transactions newTransaction = updateTargetAccountTransactions(sourceAccount, targetAccount, amountToBeDepositedToTargetAccount, exchangeRate, timeOfTransaction);
             targetAccount.addTransaction(newTransaction);
         }
     }
 
     /**
-     * This method takes care of the deposit transaction and adds the transaction to the same collection as the method above.
-     *
-     * @param account
-     * @param amount
-     * @return
-     */
-    private Transactions updateDepositTransaction(BankAccount account, double amount) {
-        Transactions transaction = new Transactions();
-
-        transaction.setSourceBank(account.getBankInstitution());
-        transaction.setAmountDeposited(amount);
-        transaction.setSourceCurrency(account.getCurrency());
-        transaction.setSourceIban(account.getIban());
-
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
-        String format = dateTimeFormatter.format(LocalDateTime.now());
-        LocalDateTime timeOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
-
-        transaction.setTimestamp(timeOfTransaction);
-
-        return transaction;
-    }
-
-    /**
-     * This method takes care of the withdraw transaction and adds the transaction to the same collection as the method above.
-     *
-     * @param account
-     * @param amount
-     * @return
-     */
-    private Transactions updateWithdrawTransaction(BankAccount account, double amount) {
-        Transactions transaction = new Transactions();
-
-        transaction.setSourceBank(account.getBankInstitution());
-        transaction.setAmountWithdrawn(amount);
-        transaction.setSourceCurrency(account.getCurrency());
-        transaction.setSourceIban(account.getIban());
-
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
-        String format = dateTimeFormatter.format(LocalDateTime.now());
-        LocalDateTime timeOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
-
-        transaction.setTimestamp(timeOfTransaction);
-
-        return transaction;
-    }
-
-    /**
-     * This method updates source's account transactions (exchange rate, source bank, target bank, etc...)
+     * Updates source's account transactions (exchange rate, source bank, target bank, etc...)
      *
      * @param sourceAccount
      * @param targetAccount
@@ -288,7 +287,7 @@ public class BankService {
     }
 
     /**
-     * This method updates target's account transactions (exchange rate, source bank, target bank, etc...)
+     * Updates target's account transactions (exchange rate, source bank, target bank, etc...)
      *
      * @param sourceAccount
      * @param targetAccount
@@ -318,14 +317,14 @@ public class BankService {
     }
 
     /**
-     * This method checks if the source account's balance is insufficient for a transfer, if the customer is trying to transfer money to his own bank account,
+     * Checks if the source account's balance is insufficient for a transfer, if the customer is trying to transfer money to his own bank account,
      * if the customer is trying to transfer money between accounts different from `Current Account`.
      *
      * @param sourceAccount
      * @param targetAccount
      * @param amountToDeposit
      */
-    private void checkValidAccounts(BankAccount sourceAccount, BankAccount targetAccount, double amountToDeposit) {
+    private void checkValidations(BankAccount sourceAccount, BankAccount targetAccount, double amountToDeposit) {
         if (sourceAccount.getAvailableAmount() < amountToDeposit) {
             throw new NotEnoughMoneyInTheSourceAccountException("Not enough money in the source account.\n");
         }
@@ -340,7 +339,7 @@ public class BankService {
     }
 
     /**
-     * This method checks if the source account and target account's currencies are the same or not. Therefore, the amountToDeposit is being calculated
+     * Checks if the source account and target account's currencies are the same or not. Therefore, the amountToDeposit is being calculated
      * based on the result.
      *
      * @param amountToDeposit

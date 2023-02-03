@@ -32,7 +32,6 @@ public class RunApplication {
 
 
             bankService.withdrawMoneyFromAccount(mirkic, 30, LocalDateTime.of(2028, 3, 2, 19, 18, 9));
-            bankService.withdrawMoneyFromAccount(mirkic, 30, LocalDateTime.of(2028, 3, 2, 19, 18, 9));
         } catch (TransfersAllowedBetweenCurrentAccountsException | InvalidCurrencyException |
                  NotAllowedToTransferToTheSameBankAccountException e) {
             System.out.println(e.getMessage());
@@ -44,7 +43,7 @@ public class RunApplication {
 //        System.out.println(mirkic.allTransactions());
 //        System.out.println(mirkic);
 //
-//        mirkic.prepareBankStatement(LocalDateTime.of(2002,2,1, 12,12,12), LocalDateTime.of(2024,3,1,12,12,12));
+        mirkic.prepareBankStatement(LocalDateTime.of(2002,2,1, 12,12,12), LocalDateTime.of(2029,3,1,12,12,12));
 //        nikic.prepareBankStatement(LocalDateTime.of(2002, 2, 1, 12, 12, 12), LocalDateTime.of(2024, 3, 1, 12, 12, 12));
 //        System.out.println(nikic.allTransactions());
 //        System.out.println(mirkic.allTransactions());
