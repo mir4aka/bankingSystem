@@ -2,6 +2,8 @@ package eu.deltasource;
 
 import eu.deltasource.enums.AccountType;
 import eu.deltasource.enums.Currency;
+import eu.deltasource.enums.ExceptionMessage;
+import eu.deltasource.enums.PriceList;
 import eu.deltasource.exception.*;
 import eu.deltasource.model.BankAccount;
 import eu.deltasource.model.Transactions;
@@ -12,7 +14,6 @@ import java.util.List;
 
 //TODO
 // read about; replace conditional with polymorphism
-// create repository that keeps track of the transactions in the bank;
 
 /**
  * This is the bank service class which is called if a transaction is going to be fulfilled(deposit, withdraw,transfer).
@@ -98,9 +99,9 @@ public class BankService {
 
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
         String format = dateTimeFormatter.format(LocalDateTime.now());
-        LocalDateTime dateOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
+        LocalDateTime timeOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
 
-        updatingSourceAccountAndTargetAccountTransactions(sourceAccount, targetAccount, dateOfTransaction, amountToBeDepositedToTheTargetAccount, exchangeRate, amountToBeWithdrawnFromSourceAccount);
+        updatingSourceAccountAndTargetAccountTransactions(sourceAccount, targetAccount, timeOfTransaction, amountToBeDepositedToTheTargetAccount, exchangeRate, amountToBeWithdrawnFromSourceAccount);
     }
 
     private double increaseTheAmountOfMoneyInTheAccount(BankAccount account, double amountToDeposit) {
@@ -114,7 +115,7 @@ public class BankService {
         double moneyAvailable = account.getAvailableAmount();
 
         if (moneyAvailable < amountToWithdraw) {
-            throw new NotEnoughMoneyToWithdrawException("Not enough money to withdraw.");
+            throw new NotEnoughMoneyToWithdrawException(ExceptionMessage.NOT_ENOUGH_MONEY.getMessage());
         }
 
         if (account.getAccountTypes().contains(AccountType.CURRENT_ACCOUNT) || account.getAccountTypes().contains(AccountType.SAVINGS_ACCOUNT)) {
@@ -135,9 +136,9 @@ public class BankService {
         double fees = 0;
 
         if (!sourceAccount.getBankInstitutionName().equals(targetAccount.getBankInstitutionName())) {
-            fees += sourceAccount.getBankInstitutionPriceList().get("Tax to different bank");
+            fees += sourceAccount.getBankInstitutionPriceList().get(PriceList.TAX_TO_DIFFERENT_BANK.getMessage());
         } else {
-            fees += sourceAccount.getBankInstitutionPriceList().get("Tax to same bank");
+            fees += sourceAccount.getBankInstitutionPriceList().get(PriceList.TAX_TO_SAME_BANK.getMessage());
         }
         return fees;
     }
@@ -153,9 +154,9 @@ public class BankService {
         double exchangeRate;
 
         if (!sourceAccount.getCurrency().equals(targetAccount.getCurrency())) {
-            exchangeRate = sourceAccount.getBankInstitutionPriceList().get("Exchange to different currency");
+            exchangeRate = sourceAccount.getBankInstitutionPriceList().get(PriceList.EXCHANGE_TO_DIFFERENT_CURRENCY.getMessage());
         } else {
-            exchangeRate = sourceAccount.getBankInstitutionPriceList().get("Exchange to same currency");
+            exchangeRate = sourceAccount.getBankInstitutionPriceList().get(PriceList.EXCHANGE_TO_SAME_CURRENCY.getMessage());
         }
         return exchangeRate;
     }
@@ -225,10 +226,9 @@ public class BankService {
 
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
         String format = dateTimeFormatter.format(LocalDateTime.now());
+        LocalDateTime timeOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
 
-        LocalDateTime parse = LocalDateTime.parse(format, dateTimeFormatter);
-
-        transaction.setTimestamp(parse);
+        transaction.setTimestamp(timeOfTransaction);
 
         return transaction;
     }
@@ -250,9 +250,9 @@ public class BankService {
 
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
         String format = dateTimeFormatter.format(LocalDateTime.now());
-        LocalDateTime parse = LocalDateTime.parse(format, dateTimeFormatter);
+        LocalDateTime timeOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
 
-        transaction.setTimestamp(parse);
+        transaction.setTimestamp(timeOfTransaction);
 
         return transaction;
     }
