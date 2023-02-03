@@ -20,8 +20,8 @@ public class BankInstitution {
         setBankAddress(bankAddress);
         this.numberOfCustomers = new HashMap<>();
         this.priceList = new HashMap<>();
-        this.priceList.put("Tax to same bank", 1.0);
-        this.priceList.put("Tax to different bank", 1.95);
+        this.priceList.put("Tax to same bank", 1.2);
+        this.priceList.put("Tax to different bank", 1.55);
         this.priceList.put("Exchange to same currency", 1.05);
         this.priceList.put("Exchange to different currency", 1.65);
     }

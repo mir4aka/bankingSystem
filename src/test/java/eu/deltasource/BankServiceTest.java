@@ -22,9 +22,11 @@ class BankServiceTest {
         BankService bankService = new BankService();
         BankInstitution bankInstitution = new BankInstitution("dsk", "ivan 2");
         BankAccount bankAccount = new BankAccount(owner, "20", bankInstitution, "odsjdspf", "GBP", 30, "CurrentAccount");
+        LocalDateTime dateTime = LocalDateTime.of(2023, 1, 1, 1, 10);
+
 
         //WHEN
-        bankService.depositMoneyToAccount(bankAccount, 5);
+        bankService.depositMoneyToAccount(bankAccount, 5, dateTime);
 
         //THEN
         Assertions.assertEquals(35, bankAccount.getAvailableAmount());
@@ -37,9 +39,10 @@ class BankServiceTest {
         BankService bankService = new BankService();
         BankInstitution bankInstitution = new BankInstitution("dsk", "ivan 2");
         BankAccount bankAccount = new BankAccount(owner, "20", bankInstitution, "odsjdspf", "GBP", 30, "CurrentAccount");
+        LocalDateTime dateTime = LocalDateTime.of(2023, 1, 1, 1, 10);
 
         //WHEN
-        bankService.withdrawMoneyFromAccount(bankAccount, 5);
+        bankService.withdrawMoneyFromAccount(bankAccount, 5, dateTime);
 
         //THEN
         Assertions.assertEquals(25, bankAccount.getAvailableAmount());
@@ -52,9 +55,11 @@ class BankServiceTest {
         BankService bankService = new BankService();
         BankInstitution bankInstitution = new BankInstitution("dsk", "ivan 2");
         BankAccount bankAccount = new BankAccount(owner, "20", bankInstitution, "odsjdspf", "GBP", 30, "CurrentAccount");
+        LocalDateTime dateTime = LocalDateTime.of(2023, 1, 1, 1, 10);
 
+        //THEN
         Assertions.assertThrows(NotEnoughMoneyToWithdrawException.class, () -> {
-            bankService.withdrawMoneyFromAccount(bankAccount, 31);
+            bankService.withdrawMoneyFromAccount(bankAccount, 31, dateTime);
         });
     }
 

@@ -19,16 +19,16 @@ public class RunApplication {
         BankInstitution dsk = new BankInstitution("dsk", "sdf");
         BankInstitution raifaizen = new BankInstitution("raifaizen", "sdfewr");
 
-        BankAccount nikic = new BankAccount(niki4, "02", dsk, "frewer", "BGN", 30, "CurrentAccount");
+        BankAccount nikic = new BankAccount(niki4, "02", dsk, "frewer", "BGN", 30, "CurrentAccount", "SavingsAccount");
 
-        BankAccount mirkic = new BankAccount(mirki4, "022", dsk, "freweer", "BGN", 30, "CurrentAccount");
+        BankAccount mirkic = new BankAccount(mirki4, "022", raifaizen, "freweer", "BGN", 30, "CurrentAccount");
 
         BankService bankService = new BankService();
         try {
-            bankService.depositMoneyToAccount(mirkic, 2, LocalDateTime.of(2023, 3,2, 16,15));
-            bankService.withdrawMoneyFromAccount(mirkic, 10, LocalDateTime.of(2023, 3,2, 15, 25, 22));
-            bankService.depositMoneyToAccount(nikic, 2);
-            bankService.transferMoney(nikic, mirkic, 10, LocalDateTime.of(2023, 3,2, 19,18,9));
+            bankService.depositMoneyToAccount(mirkic, 2, LocalDateTime.of(2026, 3, 2, 16, 15));
+            bankService.withdrawMoneyFromAccount(mirkic, 10, LocalDateTime.of(2025, 3, 2, 15, 25, 22));
+            bankService.depositMoneyToAccount(nikic, 2, LocalDateTime.of(2027, 3, 2, 19, 18, 9));
+            bankService.transferMoney(nikic, mirkic, 10, LocalDateTime.of(2028, 3, 2, 19, 18, 9));
 
         } catch (TransfersAllowedBetweenCurrentAccountsException | InvalidCurrencyException |
                  NotAllowedToTransferToTheSameBankAccountException e) {
@@ -42,9 +42,9 @@ public class RunApplication {
 //        System.out.println(mirkic);
 //
 //        mirkic.prepareBankStatement(LocalDateTime.of(2002,2,1, 12,12,12), LocalDateTime.of(2024,3,1,12,12,12));
-        nikic.prepareBankStatement(LocalDateTime.of(2002,2,1,12,12,12), LocalDateTime.of(2024,3,1,12,12,12));
+        nikic.prepareBankStatement(LocalDateTime.of(2002, 2, 1, 12, 12, 12), LocalDateTime.of(2024, 3, 1, 12, 12, 12));
 //        System.out.println(nikic.allTransactions());
 //        System.out.println(mirkic.allTransactions());
-        
+
     }
 }

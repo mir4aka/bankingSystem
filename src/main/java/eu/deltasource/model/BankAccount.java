@@ -6,7 +6,6 @@ import eu.deltasource.enums.ExceptionMessage;
 import eu.deltasource.exception.*;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class BankAccount {
@@ -20,7 +19,7 @@ public class BankAccount {
     private List<AccountType> accountTypes;
     private List<Transactions> accountTransactions;
 
-    public BankAccount(Owner owner, String ownerId, BankInstitution bankInstitution, String iban, String currency, double availableAmount, String accountType) {
+    public BankAccount(Owner owner, String ownerId, BankInstitution bankInstitution, String iban, String currency, double availableAmount, String... accountType) {
         this.owner = owner;
         this.owner.setId(ownerId);
         this.bankInstitution = bankInstitution;
@@ -36,7 +35,7 @@ public class BankAccount {
     }
 
     private void addsAccountToBank() {
-        Map<String, Integer> numberOfCustomers = getBankInstitution().getNumberOfCustomers();
+        Map<String, Integer> numberOfCustomers = bankInstitution.getNumberOfCustomers();
 
         if (numberOfCustomers.containsKey(owner.getId())) {
             throw new AlreadyExistingIdException("A person with that id already has an account in this bank.\n");
@@ -73,7 +72,7 @@ public class BankAccount {
 
         printAccountInformation(start, end);
         for (Transactions transaction : getAccountTransactions()) {
-            checkIfTheTransactionIsADepositWithdrawOrATransfer(transaction);
+            printOutInformationDependingOnTheTransactionType(transaction);
         }
     }
 
@@ -96,7 +95,12 @@ public class BankAccount {
         System.out.println("Transactions:");
     }
 
-    private void checkIfTheTransactionIsADepositWithdrawOrATransfer(Transactions transaction) {
+    /**
+     * A transaction type can be either deposit, withdraw or a transfer between two bank accounts.
+     *
+     * @param transaction
+     */
+    private void printOutInformationDependingOnTheTransactionType(Transactions transaction) {
         int dayOfMonth = transaction.getTimestamp().getDayOfMonth();
         int month = transaction.getTimestamp().getMonthValue();
         int year = transaction.getTimestamp().getYear();
@@ -161,6 +165,14 @@ public class BankAccount {
         return bankInstitution;
     }
 
+    public String getBankInstitutionName() {
+        return bankInstitution.getBankName();
+    }
+
+    public Map<String, Double> getBankInstitutionPriceList() {
+        return Collections.unmodifiableMap(bankInstitution.getPriceList());
+    }
+
     public String getIban() {
         return iban;
     }
@@ -170,12 +182,16 @@ public class BankAccount {
     }
 
     private void setCurrency(String currency) {
-        if (currency.equals(Currency.BGN.getMessage()) || currency.equals(Currency.USD.getMessage()) || currency.equals(Currency.GBP.getMessage())) {
-            this.currency = currency;
-        } else {
+        if (!isCurrencyValid(currency)) {
             throw new InvalidCurrencyException(ExceptionMessage.INVALID_CURRENCY.getMessage());
         }
+        this.currency = currency;
     }
+
+    private boolean isCurrencyValid(String currency) {
+        return currency.equals(Currency.BGN.getMessage()) || currency.equals(Currency.USD.getMessage()) || currency.equals(Currency.GBP.getMessage());
+    }
+
 
     public double getAvailableAmount() {
         return availableAmount;
@@ -194,20 +210,22 @@ public class BankAccount {
 
     public void addTransaction(Transactions transaction) {
         accountTransactions.add(transaction);
-        getBankInstitution().addTransactions(transaction);
+        bankInstitution.addTransactions(transaction);
     }
 
     public List<AccountType> getAccountTypes() {
         return Collections.unmodifiableList(accountTypes);
     }
 
-    private void setAccountType(String accountType) {
-        if (accountType.equals(AccountType.CURRENT_ACCOUNT.getMessage())) {
-            accountTypes.add(AccountType.CURRENT_ACCOUNT);
-        } else if (accountType.equals(AccountType.SAVINGS_ACCOUNT.getMessage())) {
-            accountTypes.add(AccountType.SAVINGS_ACCOUNT);
-        } else {
-            throw new AccountTypeCannotBeDifferentFromCurrentAndSavingsException(ExceptionMessage.INVALID_ACCOUNT_TYPE.getMessage());
+    private void setAccountType(String... accountType) {
+        for (String type : accountType) {
+            if (type.equals(AccountType.CURRENT_ACCOUNT.getMessage())) {
+                accountTypes.add(AccountType.CURRENT_ACCOUNT);
+            } else if (type.equals(AccountType.SAVINGS_ACCOUNT.getMessage())) {
+                accountTypes.add(AccountType.SAVINGS_ACCOUNT);
+            } else {
+                throw new AccountTypeCannotBeDifferentFromCurrentAndSavingsException(ExceptionMessage.INVALID_ACCOUNT_TYPE.getMessage());
+            }
         }
     }
 
