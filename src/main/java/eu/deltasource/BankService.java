@@ -34,7 +34,7 @@ public class BankService {
 
     private double increaseTheAmountOfMoneyInTheAccount(BankAccount account, double amountToDeposit) {
         if (account.getAccountTypes().contains(AccountType.CURRENT_ACCOUNT) || account.getAccountTypes().contains(AccountType.SAVINGS_ACCOUNT)) {
-            account.addAmount(amountToDeposit);
+            account.addMoneyToAccountBalance(amountToDeposit);
         }
         return account.getAvailableAmount();
     }
@@ -60,7 +60,7 @@ public class BankService {
         }
 
         if (account.getAccountTypes().contains(AccountType.CURRENT_ACCOUNT) || account.getAccountTypes().contains(AccountType.SAVINGS_ACCOUNT)) {
-            account.removeAmount(amountToWithdraw);
+            account.removeMoneyFromAccountBalance(amountToWithdraw);
 
         }
         return account.getAvailableAmount();
@@ -115,7 +115,7 @@ public class BankService {
     }
 
     /**
-     * Takes care of the transactions between two bank accounts
+     * Takes care of the transactions between two bank accounts.
      *
      * @param sourceAccount
      * @param targetAccount
@@ -123,18 +123,6 @@ public class BankService {
      * @param date
      */
     public void transferMoney(BankAccount sourceAccount, BankAccount targetAccount, double amountToTransfer, LocalDateTime date) {
-        transfer(sourceAccount, targetAccount, amountToTransfer, date);
-    }
-
-    /**
-     * This is the logic for the transfer method.
-     *
-     * @param sourceAccount
-     * @param targetAccount
-     * @param amountToTransfer
-     * @param date
-     */
-    private void transfer(BankAccount sourceAccount, BankAccount targetAccount, double amountToTransfer, LocalDateTime date) {
         checkValidations(sourceAccount, targetAccount, amountToTransfer);
 
         checkIfTheDateTimeIsValid(date);
@@ -167,6 +155,7 @@ public class BankService {
         LocalDateTime timeOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
 
         updatingSourceAccountAndTargetAccountTransactions(sourceAccount, targetAccount, timeOfTransaction, amountToBeDepositedToTheTargetAccount, exchangeRate, amountToBeWithdrawnFromSourceAccount);
+
     }
 
     /**

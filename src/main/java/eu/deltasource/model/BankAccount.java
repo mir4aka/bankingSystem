@@ -167,11 +167,11 @@ public class BankAccount {
         System.out.println("----------------<");
     }
 
-    public void addAmount(double amount) {
+    public void addMoneyToAccountBalance(double amount) {
         availableAmount += amount;
     }
 
-    public void removeAmount(double amount) {
+    public void removeMoneyFromAccountBalance(double amount) {
         availableAmount -= amount;
     }
 

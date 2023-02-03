@@ -19,6 +19,23 @@ public class Transactions {
     private double exchangeRate;
     private LocalDateTime timestamp;
 
+    public Transactions(String sourceIban, String targetIban, BankInstitution sourceBank, BankInstitution targetBank, double amountTransferred, double amountDeposited, double amountWithdrawn, String sourceCurrency, String targetCurrency, double exchangeRate, LocalDateTime timestamp) {
+        this.sourceIban = sourceIban;
+        this.targetIban = targetIban;
+        this.sourceBank = sourceBank;
+        this.targetBank = targetBank;
+        this.amountTransferred = amountTransferred;
+        this.amountDeposited = amountDeposited;
+        this.amountWithdrawn = amountWithdrawn;
+        this.sourceCurrency = sourceCurrency;
+        this.targetCurrency = targetCurrency;
+        this.exchangeRate = exchangeRate;
+        this.timestamp = timestamp;
+    }
+
+    public Transactions() {
+    }
+
     public String getSourceIban() {
         return sourceIban;
     }

@@ -1,6 +1,7 @@
 package eu.deltasource.model;
 
 import eu.deltasource.enums.ExceptionMessage;
+import eu.deltasource.enums.PriceList;
 import eu.deltasource.exception.InvalidInputException;
 
 import java.util.*;
@@ -32,10 +33,10 @@ public class BankInstitution {
     }
 
     private void addsPricesToPriceListOfTheBank() {
-        this.priceList.put("Tax to same bank", 1.2);
-        this.priceList.put("Tax to different bank", 1.55);
-        this.priceList.put("Exchange to same currency", 1.05);
-        this.priceList.put("Exchange to different currency", 1.65);
+        this.priceList.put(PriceList.TAX_TO_SAME_BANK.getMessage(), 1.2);
+        this.priceList.put(PriceList.TAX_TO_DIFFERENT_BANK.getMessage(), 1.55);
+        this.priceList.put(PriceList.EXCHANGE_TO_SAME_CURRENCY.getMessage(), 1.05);
+        this.priceList.put(PriceList.EXCHANGE_TO_DIFFERENT_CURRENCY.getMessage(), 1.65);
     }
 
     public String getBankName() {
