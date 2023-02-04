@@ -6,16 +6,22 @@ import eu.deltasource.enums.ExceptionMessage;
 import eu.deltasource.enums.PriceList;
 import eu.deltasource.exception.*;
 import eu.deltasource.model.BankAccount;
+import eu.deltasource.model.BankInstitution;
 import eu.deltasource.model.Transaction;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This is the bank service class which is called if a transaction is going to be fulfilled(deposit, withdraw,transfer).
  */
 public class BankService {
+
+    private BankRepository bankRepository = new BankRepositoryImpl();
+    private BankInstitution bankInstitution = new BankInstitution();
 
     public void depositMoneyToAccount(BankAccount account, double amountToDeposit, LocalDateTime date) {
         checkIfTheDateTimeIsValid(date);
@@ -27,6 +33,7 @@ public class BankService {
         Transaction transaction = updateDepositTransaction(account, amountToDeposit, date);
 
         account.addTransaction(transaction);
+        bankInstitution.addTransaction(transaction);
     }
 
     private double increaseTheAmountOfMoneyInTheAccount(BankAccount account, double amountToDeposit) {
@@ -47,6 +54,7 @@ public class BankService {
         Transaction transaction = updateWithdrawTransaction(account, amountToWithdraw, date);
 
         account.addTransaction(transaction);
+        bankInstitution.addTransaction(transaction);
     }
 
     private double decreaseTheAmountOfMoneyInTheAccount(BankAccount account, double amountToWithdraw) {
@@ -71,8 +79,10 @@ public class BankService {
      * @return
      */
     private Transaction updateDepositTransaction(BankAccount account, double amount, LocalDateTime date) {
+        BankInstitution accountBank = bankRepository.findBank(account.getBank());
+
         Transaction transaction = new Transaction();
-        transaction.setSourceBank(account.getBankInstitution());
+        transaction.setSourceBank(accountBank);
         transaction.setAmountDeposited(amount);
         transaction.setSourceCurrency(account.getCurrency());
         transaction.setSourceIban(account.getIban());
@@ -94,8 +104,10 @@ public class BankService {
      * @return
      */
     private Transaction updateWithdrawTransaction(BankAccount account, double amount, LocalDateTime date) {
+        BankInstitution accountBank = bankRepository.findBank(account.getBank());
+
         Transaction transaction = new Transaction();
-        transaction.setSourceBank(account.getBankInstitution());
+        transaction.setSourceBank(accountBank);
         transaction.setAmountWithdrawn(amount);
         transaction.setSourceCurrency(account.getCurrency());
         transaction.setSourceIban(account.getIban());
@@ -158,10 +170,10 @@ public class BankService {
     private double calculateFees(BankAccount sourceAccount, BankAccount targetAccount) {
         double fees = 0;
 
-        if (!sourceAccount.getBankInstitutionName().equals(targetAccount.getBankInstitutionName())) {
-            fees += sourceAccount.getBankInstitutionPriceList().get(PriceList.TAX_TO_DIFFERENT_BANK.getMessage());
+        if (!sourceAccount.getBank().equals(targetAccount.getBank())) {
+            fees += bankRepository.findBank(sourceAccount.getBank()).getPriceList().get(PriceList.TAX_TO_DIFFERENT_BANK.getMessage());
         } else {
-            fees += sourceAccount.getBankInstitutionPriceList().get(PriceList.TAX_TO_SAME_BANK.getMessage());
+            fees += bankRepository.findBank(sourceAccount.getBank()).getPriceList().get(PriceList.TAX_TO_SAME_BANK.getMessage());
         }
         return fees;
     }
@@ -177,9 +189,9 @@ public class BankService {
         double exchangeRate;
 
         if (!sourceAccount.getCurrency().equals(targetAccount.getCurrency())) {
-            exchangeRate = sourceAccount.getBankInstitutionPriceList().get(PriceList.EXCHANGE_TO_DIFFERENT_CURRENCY.getMessage());
+            exchangeRate = bankRepository.findBank(sourceAccount.getBank()).getPriceList().get(PriceList.EXCHANGE_TO_DIFFERENT_CURRENCY.getMessage());
         } else {
-            exchangeRate = sourceAccount.getBankInstitutionPriceList().get(PriceList.EXCHANGE_TO_SAME_CURRENCY.getMessage());
+            exchangeRate = bankRepository.findBank(sourceAccount.getBank()).getPriceList().get(PriceList.EXCHANGE_TO_SAME_CURRENCY.getMessage());
         }
         return exchangeRate;
     }
@@ -210,6 +222,9 @@ public class BankService {
         List<Transaction> sourceAccountTransactions = sourceAccount.getAccountTransactions();
         List<Transaction> targetAccountTransactions = targetAccount.getAccountTransactions();
 
+        BankInstitution sourceAccountBank = bankRepository.findBank(sourceAccount.getBank());
+        BankInstitution targetAccountBank = bankRepository.findBank(targetAccount.getBank());
+
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
         String format = dateTimeFormatter.format(date);
         LocalDateTime timeOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
@@ -217,17 +232,25 @@ public class BankService {
         if (sourceAccountTransactions.isEmpty()) {
             Transaction sourceAccountTransaction = updateSourceAccountTransactions(sourceAccount, targetAccount, amountToBeWithdrawnFromSourceAccount, exchangeRate, timeOfTransaction);
             sourceAccount.addTransaction(sourceAccountTransaction);
+            sourceAccountTransaction = new Transaction(sourceAccount.getIban(), targetAccount.getIban(), amountToBeWithdrawnFromSourceAccount, sourceAccount.getCurrency(), targetAccount.getCurrency(), exchangeRate, timeOfTransaction);
+            sourceAccountBank.addTransaction(sourceAccountTransaction);
         } else {
             Transaction newTransaction = updateSourceAccountTransactions(sourceAccount, targetAccount, amountToBeWithdrawnFromSourceAccount, exchangeRate, timeOfTransaction);
             sourceAccount.addTransaction(newTransaction);
+            newTransaction = new Transaction(sourceAccount.getIban(), targetAccount.getIban(), amountToBeWithdrawnFromSourceAccount, sourceAccount.getCurrency(), targetAccount.getCurrency(), exchangeRate, timeOfTransaction);
+            sourceAccountBank.addTransaction(newTransaction);
         }
 
         if (targetAccountTransactions.isEmpty()) {
             Transaction targetAccountTransaction = updateTargetAccountTransactions(sourceAccount, targetAccount, amountToBeDepositedToTargetAccount, exchangeRate, timeOfTransaction);
             targetAccount.addTransaction(targetAccountTransaction);
+            targetAccountTransaction = new Transaction(sourceAccount.getIban(), targetAccount.getIban(), amountToBeWithdrawnFromSourceAccount, sourceAccount.getCurrency(), targetAccount.getCurrency(), exchangeRate, timeOfTransaction);
+            targetAccountBank.addTransaction(targetAccountTransaction);
         } else {
             Transaction newTransaction = updateTargetAccountTransactions(sourceAccount, targetAccount, amountToBeDepositedToTargetAccount, exchangeRate, timeOfTransaction);
             targetAccount.addTransaction(newTransaction);
+            newTransaction = new Transaction(sourceAccount.getIban(), targetAccount.getIban(), amountToBeWithdrawnFromSourceAccount, sourceAccount.getCurrency(), targetAccount.getCurrency(), exchangeRate, timeOfTransaction);
+            targetAccountBank.addTransaction(newTransaction);
         }
     }
 
@@ -243,10 +266,13 @@ public class BankService {
      */
     private Transaction updateSourceAccountTransactions(BankAccount sourceAccount, BankAccount targetAccount,
                                                         double amount, double exchangeRate, LocalDateTime date) {
+        BankInstitution sourceAccountBank = bankRepository.findBank(sourceAccount.getBank());
+        BankInstitution targetAccountBank = bankRepository.findBank(targetAccount.getBank());
+
         Transaction transaction = new Transaction();
         transaction.setExchangeRate(exchangeRate);
-        transaction.setSourceBank(sourceAccount.getBankInstitution());
-        transaction.setTargetBank(targetAccount.getBankInstitution());
+        transaction.setSourceBank(sourceAccountBank);
+        transaction.setTargetBank(targetAccountBank);
         transaction.setAmountTransferred(amount);
         transaction.setSourceCurrency(sourceAccount.getCurrency());
         transaction.setTargetCurrency(targetAccount.getCurrency());
@@ -273,10 +299,13 @@ public class BankService {
      */
     private Transaction updateTargetAccountTransactions(BankAccount sourceAccount, BankAccount targetAccount,
                                                         double amount, double exchangeRate, LocalDateTime date) {
+        BankInstitution sourceAccountBank = bankRepository.findBank(sourceAccount.getBank());
+        BankInstitution targetAccountBank = bankRepository.findBank(targetAccount.getBank());
+
         Transaction transaction = new Transaction();
         transaction.setExchangeRate(exchangeRate);
-        transaction.setSourceBank(sourceAccount.getBankInstitution());
-        transaction.setTargetBank(targetAccount.getBankInstitution());
+        transaction.setSourceBank(sourceAccountBank);
+        transaction.setTargetBank(targetAccountBank);
         transaction.setAmountTransferred(amount);
         transaction.setSourceCurrency(sourceAccount.getCurrency());
         transaction.setTargetCurrency(targetAccount.getCurrency());
@@ -357,4 +386,18 @@ public class BankService {
         return amountToDeposit;
     }
 
+    public void addBank(BankInstitution bankInstitution) {
+        bankRepository.addBank(bankInstitution);
+    }
+
+    public void addBankAccountToBank(BankAccount bankAccount, BankInstitution bankInstitution) {
+        bankRepository.addBankAccountToBank(bankAccount, bankInstitution);
+        bankAccount.setBank(bankInstitution.getBankInstitutionName());
+
+        bankInstitution.addCustomerToBank(bankAccount.getOwner().getId());
+    }
+
+    private BankInstitution getBankInstitution() {
+        return bankInstitution;
+    }
 }

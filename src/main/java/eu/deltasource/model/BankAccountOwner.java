@@ -50,12 +50,7 @@ public class BankAccountOwner {
             throw new InvalidInputException(ExceptionMessage.ID_INVALID.getMessage());
         }
 
-        if (BankInstitution.getBankAccountOwners().contains(id)) {
-            throw new InvalidInputException("An account in this bank already exists with this id: " + id);
-        }
-
         this.id = id;
-        BankInstitution.addBankAccountToBank(id);
     }
 
     @Override

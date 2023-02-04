@@ -14,31 +14,16 @@ public class BankAccount {
     private String iban;
     private String currency;
     private double availableAmount;
-    private BankInstitution bankInstitution;
+    private String bankName;
     private List<AccountType> accountTypes = new ArrayList<>();
     private List<Transaction> accountTransactions = new LinkedList<>();
 
-    public BankAccount(BankAccountOwner owner, BankInstitution bankInstitution, String iban, String currency, double availableAmount, String... accountType) {
+    public BankAccount(BankAccountOwner owner, String iban, String currency, double availableAmount, String... accountType) {
         this.owner = owner;
-        this.bankInstitution = bankInstitution;
         this.iban = iban;
         setCurrency(currency);
         setAvailableAmount(availableAmount);
         setAccountType(accountType);
-        addsAccountToBank();
-    }
-
-    /**
-     * This method is called when a new account is ot be created in the bank, if the account already exists, an exception will be thrown, otherwise, the account
-     * is added to the bank incrementing the number of customers of the bank based on the account owner's id.
-     */
-    private void addsAccountToBank() {
-        Map<String, Integer> numberOfCustomers = bankInstitution.getNumberOfCustomers();
-
-        if (numberOfCustomers.containsKey(owner.getId())) {
-            throw new AlreadyExistingIdException("A person with that id already has an account in this bank.\n");
-        }
-        getBankInstitution().addAccountToNumberOfCustomers(owner.getId(), 1);
     }
 
     /**
@@ -129,16 +114,14 @@ public class BankAccount {
         } else if (transaction.getAmountDeposited() != 0) {
             System.out.println("Source account: " + transaction.getSourceIban());
             System.out.println("Amount Deposited: " + transaction.getAmountDeposited());
-            System.out.println("Source currency: " + transaction.getSourceCurrency());
-            System.out.println("Exchange rate: " + transaction.getExchangeRate());
+            System.out.println("Currency: " + transaction.getSourceCurrency());
             System.out.printf("Timestamp: %d-%d-%d\n", dayOfMonth, month, year);
             System.out.println("----------------<");
             return;
         } else if (transaction.getAmountWithdrawn() != 0) {
             System.out.println("Source account: " + transaction.getSourceIban());
             System.out.println("Amount withdrawn: " + transaction.getAmountWithdrawn());
-            System.out.println("Source currency: " + transaction.getSourceCurrency());
-            System.out.println("Exchange rate: " + transaction.getExchangeRate());
+            System.out.println("Currency: " + transaction.getSourceCurrency());
             System.out.printf("Timestamp: %d-%d-%d\n", dayOfMonth, month, year);
             System.out.println("----------------<");
             return;
@@ -172,7 +155,6 @@ public class BankAccount {
 
     public void addTransaction(Transaction transaction) {
         accountTransactions.add(transaction);
-        bankInstitution.addTransaction(transaction);
     }
 
     private boolean isCurrencyValid(String currency) {
@@ -181,18 +163,6 @@ public class BankAccount {
 
     public BankAccountOwner getOwner() {
         return owner;
-    }
-
-    public BankInstitution getBankInstitution() {
-        return bankInstitution;
-    }
-
-    public String getBankInstitutionName() {
-        return bankInstitution.getBankName();
-    }
-
-    public Map<String, Double> getBankInstitutionPriceList() {
-        return Collections.unmodifiableMap(bankInstitution.getPriceList());
     }
 
     public String getIban() {
@@ -219,6 +189,14 @@ public class BankAccount {
             throw new AvailableAmountCannotBeNegativeException(ExceptionMessage.INVALID_AMOUNT.getMessage());
         }
         this.availableAmount = availableAmount;
+    }
+
+    public String getBank() {
+        return bankName;
+    }
+
+    public void setBank(String bank) {
+        this.bankName = bank;
     }
 
     public List<Transaction> getAccountTransactions() {

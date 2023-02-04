@@ -18,14 +18,10 @@ public class Transaction {
     private BankInstitution targetBank;
     private LocalDateTime timestamp;
 
-    public Transaction(String sourceIban, String targetIban, BankInstitution sourceBank, BankInstitution targetBank, double amountTransferred, double amountDeposited, double amountWithdrawn, String sourceCurrency, String targetCurrency, double exchangeRate, LocalDateTime timestamp) {
+    public Transaction(String sourceIban, String targetIban, double amountTransferred, String sourceCurrency, String targetCurrency, double exchangeRate, LocalDateTime timestamp) {
         this.sourceIban = sourceIban;
         this.targetIban = targetIban;
-        this.sourceBank = sourceBank;
-        this.targetBank = targetBank;
         this.amountTransferred = amountTransferred;
-        this.amountDeposited = amountDeposited;
-        this.amountWithdrawn = amountWithdrawn;
         this.sourceCurrency = sourceCurrency;
         this.targetCurrency = targetCurrency;
         this.exchangeRate = exchangeRate;

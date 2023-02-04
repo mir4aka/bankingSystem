@@ -2,6 +2,7 @@ package eu.deltasource.model;
 
 import eu.deltasource.enums.ExceptionMessage;
 import eu.deltasource.enums.PriceList;
+import eu.deltasource.exception.AlreadyExistingIdException;
 import eu.deltasource.exception.InvalidInputException;
 
 import java.util.*;
@@ -13,7 +14,7 @@ public class BankInstitution {
     private Map<String, Integer> numberOfCustomers = new HashMap<>();
     private Map<String, Double> priceList = new HashMap<>();
     private List<Transaction> transactions = new ArrayList<>();
-    private static Set<String> bankAccountOwners = new HashSet<>();
+    private List<BankAccount> bankAccounts = new ArrayList<>();
 
     public BankInstitution(String bankName, String bankAddress) {
         setBankName(bankName);
@@ -21,9 +22,12 @@ public class BankInstitution {
         addsPricesToPriceListOfTheBank();
     }
 
-    public void addAccountToNumberOfCustomers(String id, int numberOfAccounts) {
-        numberOfCustomers.put(id, numberOfAccounts);
+    public BankInstitution() {
     }
+
+    //    public void addAccountToNumberOfCustomers(String id, int numberOfAccounts) {
+//        numberOfCustomers.put(id, numberOfAccounts);
+//    }
 
     public void addTransaction(Transaction transaction) {
         transactions.add(transaction);
@@ -36,7 +40,7 @@ public class BankInstitution {
         this.priceList.put(PriceList.EXCHANGE_TO_DIFFERENT_CURRENCY.getMessage(), 1.65);
     }
 
-    public String getBankName() {
+    public String getBankInstitutionName() {
         return bankName;
     }
 
@@ -45,6 +49,10 @@ public class BankInstitution {
             throw new InvalidInputException(ExceptionMessage.INVALID_BANK_NAME.getMessage());
         }
         this.bankName = bankName;
+    }
+
+    public String getBankInstitutionAddress() {
+        return bankAddress;
     }
 
     public void setBankAddress(String bankAddress) {
@@ -58,16 +66,21 @@ public class BankInstitution {
         return Collections.unmodifiableMap(numberOfCustomers);
     }
 
+    public void addCustomerToBank(String id) {
+        if (numberOfCustomers.containsKey(id)) {
+            throw new AlreadyExistingIdException("An account with this id already exists in this bank.");
+        }
+
+        numberOfCustomers.put(id, 1);
+    }
+
+
     public Map<String, Double> getPriceList() {
         return priceList;
     }
 
-    public static Set<String> getBankAccountOwners() {
-        return Collections.unmodifiableSet(bankAccountOwners);
-    }
-
-    public static void addBankAccountToBank(String id) {
-        bankAccountOwners.add(id);
+    public List<BankAccount> getBankAccounts    () {
+        return bankAccounts;
     }
 
     @Override
