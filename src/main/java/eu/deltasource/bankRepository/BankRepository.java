@@ -1,9 +1,7 @@
-package eu.deltasource.BankRepository;
+package eu.deltasource.bankRepository;
 
 import eu.deltasource.model.BankAccount;
 import eu.deltasource.model.BankInstitution;
-
-import java.util.Collection;
 
 public interface BankRepository {
     void addBank(BankInstitution bankInstitution);

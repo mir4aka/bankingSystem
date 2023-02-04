@@ -1,4 +1,4 @@
-package eu.deltasource.BankRepository;
+package eu.deltasource.bankRepository;
 
 import eu.deltasource.model.BankAccount;
 import eu.deltasource.model.BankInstitution;

@@ -1,7 +1,7 @@
 package eu.deltasource;
 
-import eu.deltasource.BankRepository.BankRepository;
-import eu.deltasource.BankRepository.BankRepositoryImpl;
+import eu.deltasource.bankRepository.BankRepository;
+import eu.deltasource.bankRepository.BankRepositoryImpl;
 import eu.deltasource.enums.AccountType;
 import eu.deltasource.enums.Currency;
 import eu.deltasource.enums.ExceptionMessage;
