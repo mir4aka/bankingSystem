@@ -1,4 +1,4 @@
-package eu.deltasource;
+package eu.deltasource.BankRepository;
 
 import eu.deltasource.model.BankAccount;
 import eu.deltasource.model.BankInstitution;
@@ -18,7 +18,7 @@ public class BankRepositoryImpl implements BankRepository {
     @Override
     public BankInstitution findBank(String name) {
         return banks.stream()
-                .filter(b -> b.getBankInstitutionName().equals(name))
+                .filter(b -> b.getBankName().equals(name))
                 .findFirst()
                 .orElse(null);
     }

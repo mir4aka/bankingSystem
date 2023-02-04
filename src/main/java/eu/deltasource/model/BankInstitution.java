@@ -25,10 +25,6 @@ public class BankInstitution {
     public BankInstitution() {
     }
 
-    //    public void addAccountToNumberOfCustomers(String id, int numberOfAccounts) {
-//        numberOfCustomers.put(id, numberOfAccounts);
-//    }
-
     public void addTransaction(Transaction transaction) {
         transactions.add(transaction);
     }
@@ -40,7 +36,20 @@ public class BankInstitution {
         this.priceList.put(PriceList.EXCHANGE_TO_DIFFERENT_CURRENCY.getMessage(), 1.65);
     }
 
-    public String getBankInstitutionName() {
+    /**
+     * Adds the customer to the bank if there is no customer with the same id, otherwise an exception is thrown.
+     *
+     * @param id
+     */
+    public void addCustomerToBank(String id) {
+        if (numberOfCustomers.containsKey(id)) {
+            throw new AlreadyExistingIdException("An account with this id already exists in this bank.");
+        }
+
+        numberOfCustomers.put(id, 1);
+    }
+
+    public String getBankName() {
         return bankName;
     }
 
@@ -49,10 +58,6 @@ public class BankInstitution {
             throw new InvalidInputException(ExceptionMessage.INVALID_BANK_NAME.getMessage());
         }
         this.bankName = bankName;
-    }
-
-    public String getBankInstitutionAddress() {
-        return bankAddress;
     }
 
     public void setBankAddress(String bankAddress) {
@@ -66,20 +71,11 @@ public class BankInstitution {
         return Collections.unmodifiableMap(numberOfCustomers);
     }
 
-    public void addCustomerToBank(String id) {
-        if (numberOfCustomers.containsKey(id)) {
-            throw new AlreadyExistingIdException("An account with this id already exists in this bank.");
-        }
-
-        numberOfCustomers.put(id, 1);
-    }
-
-
     public Map<String, Double> getPriceList() {
         return priceList;
     }
 
-    public List<BankAccount> getBankAccounts    () {
+    public List<BankAccount> getBankAccounts() {
         return bankAccounts;
     }
 

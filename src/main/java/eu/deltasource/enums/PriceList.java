@@ -7,6 +7,7 @@ public enum PriceList {
     EXCHANGE_TO_SAME_CURRENCY("Exchange to same currency");
 
     final String message;
+
     PriceList(String message) {
         this.message = message;
     }

@@ -15,12 +15,12 @@ public class BankAccount {
     private String currency;
     private double availableAmount;
     private String bankName;
-    private List<AccountType> accountTypes = new ArrayList<>();
     private List<Transaction> accountTransactions = new LinkedList<>();
+    private List<AccountType> accountTypes = new ArrayList<>();
 
-    public BankAccount(BankAccountOwner owner, String iban, String currency, double availableAmount, String... accountType) {
+    public BankAccount(BankAccountOwner owner, String currency, double availableAmount, String... accountType) {
         this.owner = owner;
-        this.iban = iban;
+        this.iban = "BGSF" + usingRandomUUID();
         setCurrency(currency);
         setAvailableAmount(availableAmount);
         setAccountType(accountType);
@@ -72,6 +72,7 @@ public class BankAccount {
         for (Transaction transaction : getAccountTransactions()) {
             printOutInformationDependingOnTheTransactionType(transaction);
         }
+        System.out.println("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
     }
 
     private void printAccountInformation(LocalDateTime start, LocalDateTime end) {
@@ -88,9 +89,9 @@ public class BankAccount {
         System.out.println("Account owner: \n" + getOwner());
         System.out.println("Currency: " + getCurrency());
         System.out.printf("Start date: %d-%d-%d\n", startDayOfMonth, startMonthValue, startYear);
-        System.out.printf("End date: %d-%d-%d\n", endDayOfMonth, endMonthValue, endYear);
-        System.out.println("---------------------------------");
+        System.out.printf("End date: %d-%d-%d,\n", endDayOfMonth, endMonthValue, endYear);
         System.out.println("Transactions:");
+        System.out.println("--------------");
     }
 
     /**
@@ -104,31 +105,27 @@ public class BankAccount {
         int year = transaction.getTimestamp().getYear();
 
         if (transaction.getAmountTransferred() != 0) {
-            System.out.println("Source account: " + transaction.getSourceIban());
-            System.out.println("Amount transferred: " + transaction.getAmountTransferred());
+            System.out.printf("Amount transferred: %.2f\n", transaction.getAmountTransferred());
             System.out.println("Source currency: " + transaction.getSourceCurrency());
             System.out.println("Exchange rate: " + transaction.getExchangeRate());
             System.out.printf("Timestamp: %d-%d-%d\n", dayOfMonth, month, year);
             System.out.println("----------------<");
             return;
         } else if (transaction.getAmountDeposited() != 0) {
-            System.out.println("Source account: " + transaction.getSourceIban());
-            System.out.println("Amount Deposited: " + transaction.getAmountDeposited());
+            System.out.printf("Amount Deposited: %.2f\n", transaction.getAmountDeposited());
             System.out.println("Currency: " + transaction.getSourceCurrency());
             System.out.printf("Timestamp: %d-%d-%d\n", dayOfMonth, month, year);
             System.out.println("----------------<");
             return;
         } else if (transaction.getAmountWithdrawn() != 0) {
-            System.out.println("Source account: " + transaction.getSourceIban());
-            System.out.println("Amount withdrawn: " + transaction.getAmountWithdrawn());
+            System.out.printf("Amount withdrawn: %.2f\n", transaction.getAmountWithdrawn());
             System.out.println("Currency: " + transaction.getSourceCurrency());
             System.out.printf("Timestamp: %d-%d-%d\n", dayOfMonth, month, year);
             System.out.println("----------------<");
             return;
         }
         if (transaction.getTargetIban() == null && transaction.getTargetCurrency() == null) {
-            System.out.println("Source account: " + transaction.getSourceIban());
-            System.out.println("Amount transferred: " + transaction.getAmountTransferred());
+            System.out.printf("Amount transferred: %.2f\n", transaction.getAmountTransferred());
             System.out.println("Source currency: " + transaction.getSourceCurrency());
             System.out.println("Exchange rate: " + transaction.getExchangeRate());
             System.out.printf("Timestamp: %d-%d-%d\n", dayOfMonth, month, year);
@@ -137,7 +134,7 @@ public class BankAccount {
         }
         System.out.println("Source account: " + transaction.getSourceIban());
         System.out.println("Target account: " + transaction.getTargetIban());
-        System.out.println("Amount transferred: " + transaction.getAmountTransferred());
+        System.out.printf("Amount transferred: %.2f\n", transaction.getAmountTransferred());
         System.out.println("Source currency: " + transaction.getSourceCurrency());
         System.out.println("Target currency: " + transaction.getTargetCurrency());
         System.out.println("Exchange rate: " + transaction.getExchangeRate());
@@ -157,8 +154,25 @@ public class BankAccount {
         accountTransactions.add(transaction);
     }
 
+    /**
+     * Checks if the currency of the account is different than the currency the bank offers.
+     *
+     * @param currency
+     * @return
+     */
     private boolean isCurrencyValid(String currency) {
         return currency.equals(Currency.BGN.getMessage()) || currency.equals(Currency.USD.getMessage()) || currency.equals(Currency.GBP.getMessage());
+    }
+
+    /**
+     * Generates a random string of letters and numbers and concatenates the result to the BGSF string afterwards
+     *
+     * @return
+     */
+    private String usingRandomUUID() {
+        UUID randomUUID = UUID.randomUUID();
+
+        return randomUUID.toString().toUpperCase().replace("-", "");
     }
 
     public BankAccountOwner getOwner() {
@@ -194,7 +208,6 @@ public class BankAccount {
     public String getBank() {
         return bankName;
     }
-
     public void setBank(String bank) {
         this.bankName = bank;
     }

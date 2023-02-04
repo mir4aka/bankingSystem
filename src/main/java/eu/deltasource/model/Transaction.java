@@ -113,7 +113,6 @@ public class Transaction {
 
     /**
      * This method returns boolean if the params below are null in case the transaction is a deposit or a withdraw, afterwards prints out the information.
-     *
      */
     private boolean checkIfEmptyValuesExistInTheTransaction() {
         return targetBank == null && targetCurrency == null && targetIban == null;

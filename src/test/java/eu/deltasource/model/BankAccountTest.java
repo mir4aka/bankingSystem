@@ -16,7 +16,7 @@ class BankAccountTest {
         BankAccountOwner owner = new BankAccountOwner("Ivan", "Ivanov", "02");
 
         Assertions.assertThrows(AccountTypeCannotBeDifferentFromCurrentAndSavingsException.class, () -> {
-            BankAccount bankAccount = new BankAccount(owner, "odsjdspf", "GBP", 30, "gdfgd");
+            BankAccount bankAccount = new BankAccount(owner, "GBP", 30, "gdfgd");
         });
     }
 
@@ -28,8 +28,8 @@ class BankAccountTest {
         BankAccountOwner owner2 = new BankAccountOwner("Gergi", "petrov", "021");
 
         BankInstitution dsk = new BankInstitution("dsk", "ivan 2");
-        BankAccount bankAccount = new BankAccount(owner, "odsjdspf", "GBP", 30, "CurrentAccount");
-        BankAccount bankAccount2 = new BankAccount(owner2, "odsjdspf1", "USD", 30, "CurrentAccount");
+        BankAccount bankAccount = new BankAccount(owner, "GBP", 30, "CurrentAccount");
+        BankAccount bankAccount2 = new BankAccount(owner2, "USD", 30, "CurrentAccount");
 
         bankService.addBank(dsk);
 
@@ -46,7 +46,7 @@ class BankAccountTest {
         BankAccountOwner owner = new BankAccountOwner("Ivan", "Ivanov", "02");
 
         Assertions.assertThrows(InvalidCurrencyException.class, () -> {
-            BankAccount bankAccount = new BankAccount(owner, "odsjdspf", "ASZ", 30, "CurrentAccount");
+            BankAccount bankAccount = new BankAccount(owner,  "ASZ", 30, "CurrentAccount");
         });
     }
 
@@ -56,7 +56,7 @@ class BankAccountTest {
         BankAccountOwner owner = new BankAccountOwner("Ivan", "Ivanov", "02");
 
         Assertions.assertThrows(AvailableAmountCannotBeNegativeException.class, () -> {
-            BankAccount bankAccount = new BankAccount(owner,"odsjdspf", "GBP", -30, "CurrentAccount");
+            BankAccount bankAccount = new BankAccount(owner, "GBP", -30, "CurrentAccount");
         });
     }
 }

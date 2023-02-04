@@ -12,6 +12,7 @@ public enum ExceptionMessage {
     INVALID_ADDRESS("Bank address cannot be blank.");
 
     final String message;
+
     ExceptionMessage(String message) {
         this.message = message;
     }

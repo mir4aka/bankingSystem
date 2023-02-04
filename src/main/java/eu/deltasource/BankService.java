@@ -1,5 +1,7 @@
 package eu.deltasource;
 
+import eu.deltasource.BankRepository.BankRepository;
+import eu.deltasource.BankRepository.BankRepositoryImpl;
 import eu.deltasource.enums.AccountType;
 import eu.deltasource.enums.Currency;
 import eu.deltasource.enums.ExceptionMessage;
@@ -11,9 +13,7 @@ import eu.deltasource.model.Transaction;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This is the bank service class which is called if a transaction is going to be fulfilled(deposit, withdraw,transfer).
@@ -41,6 +41,26 @@ public class BankService {
             account.addMoneyToAccountBalance(amountToDeposit);
         }
         return account.getAvailableAmount();
+    }
+
+    /**
+     * Takes care of the deposit transaction and adds the transaction to the collection of transactions of the account and the bank.
+     *
+     * @param account
+     * @param amount
+     * @return
+     */
+    private Transaction updateDepositTransaction(BankAccount account, double amount, LocalDateTime date) {
+        BankInstitution accountBank = bankRepository.findBank(account.getBank());
+        Transaction transaction = new Transaction();
+        transaction.setSourceBank(accountBank);
+        transaction.setAmountDeposited(amount);
+        transaction.setSourceCurrency(account.getCurrency());
+        transaction.setSourceIban(account.getIban());
+        LocalDateTime timeOfTransaction = dateFormat(date);
+        transaction.setTimestamp(timeOfTransaction);
+
+        return transaction;
     }
 
     public void withdrawMoneyFromAccount(BankAccount account, double amountToWithdraw, LocalDateTime date) {
@@ -72,31 +92,6 @@ public class BankService {
     }
 
     /**
-     * Takes care of the deposit transaction and adds the transaction to the collection of transactions of the account and the bank.
-     *
-     * @param account
-     * @param amount
-     * @return
-     */
-    private Transaction updateDepositTransaction(BankAccount account, double amount, LocalDateTime date) {
-        BankInstitution accountBank = bankRepository.findBank(account.getBank());
-
-        Transaction transaction = new Transaction();
-        transaction.setSourceBank(accountBank);
-        transaction.setAmountDeposited(amount);
-        transaction.setSourceCurrency(account.getCurrency());
-        transaction.setSourceIban(account.getIban());
-
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
-        String format = dateTimeFormatter.format(date);
-        LocalDateTime timeOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
-
-        transaction.setTimestamp(timeOfTransaction);
-
-        return transaction;
-    }
-
-    /**
      * Takes care of the withdraw transaction and adds the transaction to the collection of transactions of the account and the bank.
      *
      * @param account
@@ -105,17 +100,12 @@ public class BankService {
      */
     private Transaction updateWithdrawTransaction(BankAccount account, double amount, LocalDateTime date) {
         BankInstitution accountBank = bankRepository.findBank(account.getBank());
-
         Transaction transaction = new Transaction();
         transaction.setSourceBank(accountBank);
         transaction.setAmountWithdrawn(amount);
         transaction.setSourceCurrency(account.getCurrency());
         transaction.setSourceIban(account.getIban());
-
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
-        String format = dateTimeFormatter.format(date);
-        LocalDateTime timeOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
-
+        LocalDateTime timeOfTransaction = dateFormat(date);
         transaction.setTimestamp(timeOfTransaction);
 
         return transaction;
@@ -142,22 +132,39 @@ public class BankService {
         double amountToBeDepositedToTheTargetAccount = checkCurrenciesAndCalculateTheAmountToBeDeposited(amountToTransfer, sourceAccountCurrency, targetAccountCurrency);
         double amountToBeWithdrawnFromSourceAccount = (amountToBeDepositedToTheTargetAccount * exchangeRate) + fees;
 
-        double moneyInSourceAccount = sourceAccount.getAvailableAmount();
-        double moneyInTargetAccount = targetAccount.getAvailableAmount();
+        updateSourceAndTargetAccountsBalance(sourceAccount, targetAccount, amountToTransfer, amountToBeDepositedToTheTargetAccount, amountToBeWithdrawnFromSourceAccount);
 
-        checkIfSourceAccountHasEnoughMoneyToTransfer(sourceAccount, amountToTransfer, moneyInSourceAccount);
-
-        moneyInSourceAccount -= amountToBeWithdrawnFromSourceAccount;
-        sourceAccount.setAvailableAmount(Double.parseDouble(String.format("%.2f", moneyInSourceAccount)));
-
-        moneyInTargetAccount += amountToBeDepositedToTheTargetAccount;
-        targetAccount.setAvailableAmount(Double.parseDouble(String.format("%.2f", moneyInTargetAccount)));
-
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
-        String format = dateTimeFormatter.format(date);
-        LocalDateTime timeOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
+        LocalDateTime timeOfTransaction = dateFormat(date);
 
         updatingSourceAccountAndTargetAccountTransactions(sourceAccount, targetAccount, timeOfTransaction, amountToBeDepositedToTheTargetAccount, exchangeRate, amountToBeWithdrawnFromSourceAccount);
+    }
+
+    /**
+     * Checks if the source account's balance is insufficient for a transfer, if the customer is trying to transfer money to his own bank account,
+     * if the customer is trying to transfer money between accounts different from `Current Account`.
+     *
+     * @param sourceAccount
+     * @param targetAccount
+     * @param amountToDeposit
+     */
+    private void checkValidations(BankAccount sourceAccount, BankAccount targetAccount, double amountToDeposit) {
+        if (sourceAccount.getAvailableAmount() < amountToDeposit) {
+            throw new NotEnoughMoneyInTheSourceAccountException("Not enough money in the source account.\n");
+        }
+
+        if (!sourceAccount.getAccountTypes().contains(AccountType.CURRENT_ACCOUNT) || !targetAccount.getAccountTypes().contains(AccountType.CURRENT_ACCOUNT)) {
+            throw new TransfersAllowedBetweenCurrentAccountsException("Transfers are only allowed between two Current accounts.\n");
+        }
+
+        if (sourceAccount.getIban().equals(targetAccount.getIban())) {
+            throw new NotAllowedToTransferToTheSameBankAccountException("It is not allowed to transfer money to the same bank account.\n");
+        }
+    }
+
+    private void checkIfTheDateTimeIsValid(LocalDateTime date) {
+        if (date.isBefore(LocalDateTime.now())) {
+            throw new InvalidInputException("You cannot enter a transaction time before.");
+        }
     }
 
     /**
@@ -168,9 +175,12 @@ public class BankService {
      * @return
      */
     private double calculateFees(BankAccount sourceAccount, BankAccount targetAccount) {
+        String sourceAccountBank = bankRepository.findBank(sourceAccount.getBank()).getBankName();
+        String targetAccountBank = bankRepository.findBank(targetAccount.getBank()).getBankName();
+
         double fees = 0;
 
-        if (!sourceAccount.getBank().equals(targetAccount.getBank())) {
+        if (!sourceAccountBank.equals(targetAccountBank)) {
             fees += bankRepository.findBank(sourceAccount.getBank()).getPriceList().get(PriceList.TAX_TO_DIFFERENT_BANK.getMessage());
         } else {
             fees += bankRepository.findBank(sourceAccount.getBank()).getPriceList().get(PriceList.TAX_TO_SAME_BANK.getMessage());
@@ -194,6 +204,57 @@ public class BankService {
             exchangeRate = bankRepository.findBank(sourceAccount.getBank()).getPriceList().get(PriceList.EXCHANGE_TO_SAME_CURRENCY.getMessage());
         }
         return exchangeRate;
+    }
+
+    /**
+     * Checks if the source account and target account's currencies are the same or not. Therefore, the amountToDeposit is being calculated
+     * based on the result.
+     *
+     * @param amountToDeposit
+     * @param sourceAccountCurrency
+     * @param targetAccountCurrency
+     * @return
+     */
+    private double checkCurrenciesAndCalculateTheAmountToBeDeposited(double amountToDeposit, String sourceAccountCurrency, String targetAccountCurrency) {
+        if (sourceAccountCurrency.equals(Currency.BGN.getMessage())) {
+            if (targetAccountCurrency.equals(Currency.USD.getMessage())) {
+                amountToDeposit = amountToDeposit * 0.55;
+            } else if (targetAccountCurrency.equals(Currency.GBP.getMessage())) {
+                amountToDeposit = amountToDeposit * 0.45;
+            } else if (targetAccountCurrency.equals(Currency.BGN.getMessage())) {
+                amountToDeposit = amountToDeposit * 1;
+            }
+        } else if (sourceAccountCurrency.equals(Currency.USD.getMessage())) {
+            if (targetAccountCurrency.equals(Currency.BGN.getMessage())) {
+                amountToDeposit = amountToDeposit * 1.80;
+            } else if (targetAccountCurrency.equals(Currency.GBP.getMessage())) {
+                amountToDeposit = amountToDeposit * 0.80;
+            } else if (targetAccountCurrency.equals(Currency.USD.getMessage())) {
+                amountToDeposit = amountToDeposit * 1;
+            }
+        } else if (sourceAccountCurrency.equals(Currency.GBP.getMessage())) {
+            if (targetAccountCurrency.equals(Currency.BGN.getMessage())) {
+                amountToDeposit = amountToDeposit * 2.23;
+            } else if (targetAccountCurrency.equals(Currency.USD.getMessage())) {
+                amountToDeposit = amountToDeposit * 1.24;
+            } else if (targetAccountCurrency.equals(Currency.GBP.getMessage())) {
+                amountToDeposit = amountToDeposit * 1;
+            }
+        }
+        return amountToDeposit;
+    }
+
+    private void updateSourceAndTargetAccountsBalance(BankAccount sourceAccount, BankAccount targetAccount, double amountToTransfer, double amountToBeDepositedToTheTargetAccount, double amountToBeWithdrawnFromSourceAccount) {
+        double moneyInSourceAccount = sourceAccount.getAvailableAmount();
+        double moneyInTargetAccount = targetAccount.getAvailableAmount();
+
+        checkIfSourceAccountHasEnoughMoneyToTransfer(sourceAccount, amountToTransfer, moneyInSourceAccount);
+
+        moneyInSourceAccount -= amountToBeWithdrawnFromSourceAccount;
+        sourceAccount.setAvailableAmount(Double.parseDouble(String.format("%.2f", moneyInSourceAccount)));
+
+        moneyInTargetAccount += amountToBeDepositedToTheTargetAccount;
+        targetAccount.setAvailableAmount(Double.parseDouble(String.format("%.2f", moneyInTargetAccount)));
     }
 
     private void checkIfSourceAccountHasEnoughMoneyToTransfer(BankAccount sourceAccount, double amountToTransfer, double moneyInSourceAccount) {
@@ -225,9 +286,7 @@ public class BankService {
         BankInstitution sourceAccountBank = bankRepository.findBank(sourceAccount.getBank());
         BankInstitution targetAccountBank = bankRepository.findBank(targetAccount.getBank());
 
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
-        String format = dateTimeFormatter.format(date);
-        LocalDateTime timeOfTransaction = LocalDateTime.parse(format, dateTimeFormatter);
+        LocalDateTime timeOfTransaction = dateFormat(date);
 
         if (sourceAccountTransactions.isEmpty()) {
             Transaction sourceAccountTransaction = updateSourceAccountTransactions(sourceAccount, targetAccount, amountToBeWithdrawnFromSourceAccount, exchangeRate, timeOfTransaction);
@@ -279,9 +338,7 @@ public class BankService {
         transaction.setSourceIban(sourceAccount.getIban());
         transaction.setTargetIban(targetAccount.getIban());
 
-        DateTimeFormatter dateTimeFormatted = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
-        String format = dateTimeFormatted.format(date);
-        LocalDateTime timeOfTransaction = LocalDateTime.parse(format, dateTimeFormatted);
+        LocalDateTime timeOfTransaction = dateFormat(date);
 
         transaction.setTimestamp(timeOfTransaction);
         return transaction;
@@ -312,92 +369,37 @@ public class BankService {
         transaction.setSourceIban(sourceAccount.getIban());
         transaction.setTargetIban(targetAccount.getIban());
 
-        DateTimeFormatter dateTimeFormatted = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
-        String format = dateTimeFormatted.format(date);
-        LocalDateTime timeOfTransaction = LocalDateTime.parse(format, dateTimeFormatted);
+        LocalDateTime timeOfTransaction = dateFormat(date);
 
         transaction.setTimestamp(timeOfTransaction);
         return transaction;
     }
 
-    private void checkIfTheDateTimeIsValid(LocalDateTime date) {
-        if (date.isBefore(LocalDateTime.now())) {
-            throw new InvalidInputException("You cannot enter a transaction time before.");
-        }
-    }
-
     /**
-     * Checks if the source account's balance is insufficient for a transfer, if the customer is trying to transfer money to his own bank account,
-     * if the customer is trying to transfer money between accounts different from `Current Account`.
+     * Formats the date to a human readable format.
      *
-     * @param sourceAccount
-     * @param targetAccount
-     * @param amountToDeposit
-     */
-    private void checkValidations(BankAccount sourceAccount, BankAccount targetAccount, double amountToDeposit) {
-        if (sourceAccount.getAvailableAmount() < amountToDeposit) {
-            throw new NotEnoughMoneyInTheSourceAccountException("Not enough money in the source account.\n");
-        }
-
-        if (!sourceAccount.getAccountTypes().contains(AccountType.CURRENT_ACCOUNT) || !targetAccount.getAccountTypes().contains(AccountType.CURRENT_ACCOUNT)) {
-            throw new TransfersAllowedBetweenCurrentAccountsException("Transfers are only allowed between two Current accounts.\n");
-        }
-
-        if (sourceAccount.getIban().equals(targetAccount.getIban())) {
-            throw new NotAllowedToTransferToTheSameBankAccountException("It is not allowed to transfer money to the same bank account.\n");
-        }
-    }
-
-    /**
-     * Checks if the source account and target account's currencies are the same or not. Therefore, the amountToDeposit is being calculated
-     * based on the result.
-     *
-     * @param amountToDeposit
-     * @param sourceAccountCurrency
-     * @param targetAccountCurrency
+     * @param date
      * @return
      */
-    private double checkCurrenciesAndCalculateTheAmountToBeDeposited(double amountToDeposit, String sourceAccountCurrency, String targetAccountCurrency) {
-        if (sourceAccountCurrency.equals(Currency.BGN.getMessage())) {
-            if (targetAccountCurrency.equals(Currency.USD.getMessage())) {
-                amountToDeposit = amountToDeposit * 0.55;
-            } else if (targetAccountCurrency.equals(Currency.GBP.getMessage())) {
-                amountToDeposit = amountToDeposit * 0.45;
-            } else if (targetAccountCurrency.equals(Currency.BGN.getMessage())) {
-                amountToDeposit = amountToDeposit * 1;
-            }
-        } else if (sourceAccountCurrency.equals(Currency.USD.getMessage())) {
-            if (targetAccountCurrency.equals(Currency.BGN.getMessage())) {
-                amountToDeposit = amountToDeposit * 1.80;
-            } else if (targetAccountCurrency.equals(Currency.GBP.getMessage())) {
-                amountToDeposit = amountToDeposit * 0.80;
-            } else if (targetAccountCurrency.equals(Currency.USD.getMessage())) {
-                amountToDeposit = amountToDeposit * 1;
-            }
-        } else if (sourceAccountCurrency.equals(Currency.GBP.getMessage())) {
-            if (targetAccountCurrency.equals(Currency.BGN.getMessage())) {
-                amountToDeposit = amountToDeposit * 2.23;
-            } else if (targetAccountCurrency.equals(Currency.USD.getMessage())) {
-                amountToDeposit = amountToDeposit * 1.24;
-            } else if (targetAccountCurrency.equals(Currency.GBP.getMessage())) {
-                amountToDeposit = amountToDeposit * 1;
-            }
-        }
-        return amountToDeposit;
+    private LocalDateTime dateFormat(LocalDateTime date) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
+        String format = dateTimeFormatter.format(date);
+        return LocalDateTime.parse(format, dateTimeFormatter);
     }
 
+    /**
+     * Adds the bank institution to the bank repository and keeps information about the bank and it's customers.
+     *
+     * @param bankInstitution
+     */
     public void addBank(BankInstitution bankInstitution) {
         bankRepository.addBank(bankInstitution);
     }
 
     public void addBankAccountToBank(BankAccount bankAccount, BankInstitution bankInstitution) {
         bankRepository.addBankAccountToBank(bankAccount, bankInstitution);
-        bankAccount.setBank(bankInstitution.getBankInstitutionName());
+        bankAccount.setBank(bankInstitution.getBankName());
 
         bankInstitution.addCustomerToBank(bankAccount.getOwner().getId());
-    }
-
-    private BankInstitution getBankInstitution() {
-        return bankInstitution;
     }
 }
