@@ -11,6 +11,7 @@ class OwnerTest {
     void testIfABlankFirstNameIsEnteredShouldThrowAnException() {
         //GIVEN
         Assertions.assertThrows(InvalidInputException.class, () -> {
+            //THEN
             BankAccountOwner owner = new BankAccountOwner("          ", "Ivanov", "02");
         });
     }
@@ -19,6 +20,7 @@ class OwnerTest {
     void testIfABlankLastNameIsEnteredShouldThrowAnException() {
         //GIVEN
         Assertions.assertThrows(InvalidInputException.class, () -> {
+            //THEN
             BankAccountOwner owner = new BankAccountOwner("Ivan", "  ", "02");
         });
     }
@@ -29,6 +31,7 @@ class OwnerTest {
         BankInstitution bankInstitution = new BankInstitution("dsk", "ivan 2");
 
         Assertions.assertThrows(AvailableAmountCannotBeNegativeException.class, () -> {
+            //THEN
             BankAccountOwner owner = new BankAccountOwner("Ivan", "Ivanov", "02");
             BankAccount bankAccount = new BankAccount(owner, "GBP", -30, "CurrentAccount");
         });

@@ -13,11 +13,11 @@ import java.time.LocalDateTime;
 public class RunApplication {
     public void run() {
 
-        BankAccountOwner niki4 = new BankAccountOwner("nikic", "Go5ov", "02");
-        BankAccountOwner mirki4 = new BankAccountOwner("mirki4", "Go5sov", "02");
+        BankAccountOwner niki4 = new BankAccountOwner("Nikola", "Petrov", "02");
+        BankAccountOwner mirki4 = new BankAccountOwner("Ivan", "Pejov", "02");
 
-        BankInstitution dsk = new BankInstitution("dsk", "sdf");
-        BankInstitution raifaizen = new BankInstitution("raifaizen", "sdfewr");
+        BankInstitution dsk = new BankInstitution("dsk", "This street");
+        BankInstitution raifaizen = new BankInstitution("raifaizen", "That street");
 
         BankAccount nikic = new BankAccount(niki4, "GBP", 30, "CurrentAccount", "SavingsAccount");
         BankAccount mirkic = new BankAccount(mirki4, "USD", 30, "CurrentAccount");
@@ -35,10 +35,11 @@ public class RunApplication {
         bankService.transferMoney(nikic, mirkic, 10, LocalDateTime.of(2028, 3, 2, 19, 18, 9));
         bankService.transferMoney(nikic, mirkic, 3.01, LocalDateTime.of(2028, 3, 2, 19, 18, 9));
 //
-        mirkic.prepareBankStatement(LocalDateTime.of(2002,2,1, 12,12,12), LocalDateTime.of(2029,3,1,12,12,12));
+//        mirkic.prepareBankStatement(LocalDateTime.of(2002,2,1, 12,12,12), LocalDateTime.of(2029,3,1,12,12,12));
 //        nikic.prepareBankStatement(LocalDateTime.of(2002, 2, 1, 12, 12, 12), LocalDateTime.of(2029, 3, 1, 12, 12, 12));
         System.out.println(nikic);
         System.out.println(mirkic);
+
 //        System.out.println(nikic.allTransactions());
 //        System.out.println(mirkic.allTransactions());
 

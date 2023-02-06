@@ -10,6 +10,7 @@ class BankInstitutionTest {
     void testIfABlankBankNameIsEnteredShouldThrowAnException() {
         //GIVEN
         Assertions.assertThrows(InvalidInputException.class, () -> {
+            //THEN
             BankInstitution bankInstitution = new BankInstitution("    ", "ivan 2");
         });
     }
@@ -18,6 +19,7 @@ class BankInstitutionTest {
     void testIfABlankAddressIsEnteredShouldThrowAnException() {
         //GIVEN
         Assertions.assertThrows(InvalidInputException.class, () -> {
+            //THEN
             BankInstitution bankInstitution = new BankInstitution("dsk", "         ");
         });
     }

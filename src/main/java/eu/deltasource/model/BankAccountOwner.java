@@ -3,10 +3,6 @@ package eu.deltasource.model;
 import eu.deltasource.enums.ExceptionMessage;
 import eu.deltasource.exception.InvalidInputException;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 public class BankAccountOwner {
 
     private String firstName;

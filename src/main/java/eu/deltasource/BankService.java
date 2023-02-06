@@ -20,8 +20,8 @@ import java.util.List;
  */
 public class BankService {
 
-    private BankRepository bankRepository = new BankRepositoryImpl();
-    private BankInstitution bankInstitution = new BankInstitution();
+    private final BankRepository bankRepository = new BankRepositoryImpl();
+    private final BankInstitution bankInstitution = new BankInstitution();
 
     public void depositMoneyToAccount(BankAccount account, double amountToDeposit, LocalDateTime date) {
         checkIfTheDateTimeIsValid(date);
@@ -51,7 +51,7 @@ public class BankService {
      * @return
      */
     private Transaction updateDepositTransaction(BankAccount account, double amount, LocalDateTime date) {
-        BankInstitution accountBank = bankRepository.findBank(account.getBank());
+        BankInstitution accountBank = bankRepository.findBank(account.getBankName());
         Transaction transaction = new Transaction();
         transaction.setSourceBank(accountBank);
         transaction.setAmountDeposited(amount);
@@ -99,7 +99,7 @@ public class BankService {
      * @return
      */
     private Transaction updateWithdrawTransaction(BankAccount account, double amount, LocalDateTime date) {
-        BankInstitution accountBank = bankRepository.findBank(account.getBank());
+        BankInstitution accountBank = bankRepository.findBank(account.getBankName());
         Transaction transaction = new Transaction();
         transaction.setSourceBank(accountBank);
         transaction.setAmountWithdrawn(amount);
@@ -175,15 +175,15 @@ public class BankService {
      * @return
      */
     private double calculateFees(BankAccount sourceAccount, BankAccount targetAccount) {
-        String sourceAccountBank = bankRepository.findBank(sourceAccount.getBank()).getBankName();
-        String targetAccountBank = bankRepository.findBank(targetAccount.getBank()).getBankName();
+        String sourceAccountBank = bankRepository.findBank(sourceAccount.getBankName()).getBankName();
+        String targetAccountBank = bankRepository.findBank(targetAccount.getBankName()).getBankName();
 
         double fees = 0;
 
         if (!sourceAccountBank.equals(targetAccountBank)) {
-            fees += bankRepository.findBank(sourceAccount.getBank()).getPriceList().get(PriceList.TAX_TO_DIFFERENT_BANK.getMessage());
+            fees += bankRepository.findBank(sourceAccount.getBankName()).getPriceList().get(PriceList.TAX_TO_DIFFERENT_BANK.getMessage());
         } else {
-            fees += bankRepository.findBank(sourceAccount.getBank()).getPriceList().get(PriceList.TAX_TO_SAME_BANK.getMessage());
+            fees += bankRepository.findBank(sourceAccount.getBankName()).getPriceList().get(PriceList.TAX_TO_SAME_BANK.getMessage());
         }
         return fees;
     }
@@ -199,9 +199,9 @@ public class BankService {
         double exchangeRate;
 
         if (!sourceAccount.getCurrency().equals(targetAccount.getCurrency())) {
-            exchangeRate = bankRepository.findBank(sourceAccount.getBank()).getPriceList().get(PriceList.EXCHANGE_TO_DIFFERENT_CURRENCY.getMessage());
+            exchangeRate = bankRepository.findBank(sourceAccount.getBankName()).getPriceList().get(PriceList.EXCHANGE_TO_DIFFERENT_CURRENCY.getMessage());
         } else {
-            exchangeRate = bankRepository.findBank(sourceAccount.getBank()).getPriceList().get(PriceList.EXCHANGE_TO_SAME_CURRENCY.getMessage());
+            exchangeRate = bankRepository.findBank(sourceAccount.getBankName()).getPriceList().get(PriceList.EXCHANGE_TO_SAME_CURRENCY.getMessage());
         }
         return exchangeRate;
     }
@@ -283,8 +283,8 @@ public class BankService {
         List<Transaction> sourceAccountTransactions = sourceAccount.getAccountTransactions();
         List<Transaction> targetAccountTransactions = targetAccount.getAccountTransactions();
 
-        BankInstitution sourceAccountBank = bankRepository.findBank(sourceAccount.getBank());
-        BankInstitution targetAccountBank = bankRepository.findBank(targetAccount.getBank());
+        BankInstitution sourceAccountBank = bankRepository.findBank(sourceAccount.getBankName());
+        BankInstitution targetAccountBank = bankRepository.findBank(targetAccount.getBankName());
 
         LocalDateTime timeOfTransaction = dateFormat(date);
 
@@ -325,8 +325,8 @@ public class BankService {
      */
     private Transaction updateSourceAccountTransactions(BankAccount sourceAccount, BankAccount targetAccount,
                                                         double amount, double exchangeRate, LocalDateTime date) {
-        BankInstitution sourceAccountBank = bankRepository.findBank(sourceAccount.getBank());
-        BankInstitution targetAccountBank = bankRepository.findBank(targetAccount.getBank());
+        BankInstitution sourceAccountBank = bankRepository.findBank(sourceAccount.getBankName());
+        BankInstitution targetAccountBank = bankRepository.findBank(targetAccount.getBankName());
 
         Transaction transaction = new Transaction();
         transaction.setExchangeRate(exchangeRate);
@@ -356,8 +356,8 @@ public class BankService {
      */
     private Transaction updateTargetAccountTransactions(BankAccount sourceAccount, BankAccount targetAccount,
                                                         double amount, double exchangeRate, LocalDateTime date) {
-        BankInstitution sourceAccountBank = bankRepository.findBank(sourceAccount.getBank());
-        BankInstitution targetAccountBank = bankRepository.findBank(targetAccount.getBank());
+        BankInstitution sourceAccountBank = bankRepository.findBank(sourceAccount.getBankName());
+        BankInstitution targetAccountBank = bankRepository.findBank(targetAccount.getBankName());
 
         Transaction transaction = new Transaction();
         transaction.setExchangeRate(exchangeRate);
@@ -376,7 +376,7 @@ public class BankService {
     }
 
     /**
-     * Formats the date to a human readable format.
+     * Formats the date to a human-readable format.
      *
      * @param date
      * @return

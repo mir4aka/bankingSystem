@@ -82,6 +82,6 @@ public class BankInstitution {
     @Override
     public String toString() {
         return bankName + " bank" + System.lineSeparator() +
-                "The address of the bank is: " + bankAddress + System.lineSeparator();
+                "The address of the bank is: " + bankAddress;
     }
 }

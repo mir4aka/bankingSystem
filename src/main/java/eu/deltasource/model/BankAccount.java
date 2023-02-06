@@ -13,8 +13,8 @@ public class BankAccount {
     private BankAccountOwner owner;
     private String iban;
     private String currency;
-    private double availableAmount;
     private String bankName;
+    private double availableAmount;
     private List<Transaction> accountTransactions = new LinkedList<>();
     private List<AccountType> accountTypes = new ArrayList<>();
 
@@ -205,11 +205,12 @@ public class BankAccount {
         this.availableAmount = availableAmount;
     }
 
-    public String getBank() {
+    public String getBankName() {
         return bankName;
     }
-    public void setBank(String bank) {
-        this.bankName = bank;
+
+    public void setBank(String bankName) {
+        this.bankName = bankName;
     }
 
     public List<Transaction> getAccountTransactions() {
@@ -221,6 +222,10 @@ public class BankAccount {
     }
 
     private void setAccountType(String... accountType) {
+        if (accountType.length > 2) {
+            throw new OnlyTwoAccountsCanBeAssignedToTheBankAccountException("You can only assign two account types of your account, either a `Current` or a `Sacvings` type of account.");
+        }
+
         for (String type : accountType) {
             if (type.equals(AccountType.CURRENT_ACCOUNT.getMessage())) {
                 accountTypes.add(AccountType.CURRENT_ACCOUNT);
@@ -234,8 +239,8 @@ public class BankAccount {
 
     @Override
     public String toString() {
-        return String.format("Account name = " + "%s" + " " + "%s" +
-                "\nAvailableAmount = " + "%.2f" + " %s\n" +
+        return String.format("Owner of the account = " + "%s" + " " + "%s" +
+                "\nAvailableAmount = " + "%.2f" + "%s\n" +
                 "------------------------------\n", owner.getFirstName(), owner.getLastName(), availableAmount, currency);
     }
 }

@@ -15,6 +15,12 @@ public class BankRepositoryImpl implements BankRepository {
         banks.add(bankInstitution);
     }
 
+    /**
+     * Finds bank in the bank repository by its name.
+     *
+     * @param name
+     * @return
+     */
     @Override
     public BankInstitution findBank(String name) {
         return banks.stream()
